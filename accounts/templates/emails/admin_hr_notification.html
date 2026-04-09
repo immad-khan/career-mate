@@ -1,0 +1,21 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<div class="email-content">
+    <h2>New HR Registration</h2>
+    <p>A new HR user has registered and verified their email. They are now waiting for your approval.</p>
+    
+    <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>HR Name:</strong> {{ hr_name }}</p>
+        <p><strong>Email:</strong> {{ hr_email }}</p>
+        <p><strong>Company:</strong> {{ company_name }}</p>
+        <p><strong>Registration Date:</strong> {{ registration_date }}</p>
+    </div>
+    
+    <p>Please log in to the admin dashboard to review their application and approval letter.</p>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{{ frontend_url }}/auth/login" class="button">Go to Admin Dashboard</a>
+    </div>
+</div>
+{% endblock %}

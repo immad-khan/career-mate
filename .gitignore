@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.env
+*.env.local
+db.sqlite3
+
+# Node
+node_modules/
+.next/
+out/
+build/
+dist/
+.npm
+.eslintcache
+
+# Project specific
+careermate-frontend/node_modules/
+careermate-frontend/.next/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

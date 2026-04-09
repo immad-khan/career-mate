@@ -1,0 +1,41 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Verify Your Email - CareerMate{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Hello, {{ user_name }}! 👋</h1>
+
+<p class="message">
+    Thank you for signing up for CareerMate! To complete your registration and start your career journey, please verify your email address using the code below:
+</p>
+
+<div class="otp-box">
+    <div class="otp-code">{{ otp_code }}</div>
+    <p class="otp-label">Your Verification Code</p>
+</div>
+
+<div class="warning">
+    <p>⏰ This code will expire in <strong>{{ expiry_minutes }} minutes</strong>. Please use it before it expires.</p>
+</div>
+
+<p class="message">
+    If you didn't create an account with CareerMate, please ignore this email or contact our support team.
+</p>
+
+<p class="message">
+    Ready to build your career? Once verified, you'll have access to:
+</p>
+
+<ul style="color: #555; margin: 15px 0 15px 20px;">
+    <li>✨ Professional resume templates</li>
+    <li>📝 AI-powered cover letter generator</li>
+    <li>🎯 Job search across multiple platforms</li>
+    <li>🤖 SkillBot for personalized learning paths</li>
+    <li>🎤 Mock interview practice</li>
+</ul>
+
+<p class="message">
+    Best of luck on your career journey!<br>
+    <span class="highlight">The CareerMate Team</span>
+</p>
+{% endblock %}

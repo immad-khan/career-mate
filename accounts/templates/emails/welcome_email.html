@@ -1,0 +1,63 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Welcome to CareerMate!{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+    <div class="success-icon">🚀</div>
+</div>
+
+<h1 class="greeting">Welcome to CareerMate, {{ user_name }}!</h1>
+
+<p class="message">
+    Your email has been verified successfully! You're now part of a community dedicated to helping you achieve your career goals.
+</p>
+
+{% if is_hr %}
+<div class="warning" style="background-color: #fff3cd; border-left-color: #ffc107;">
+    <p style="color: #856404;">
+        ⏳ <strong>Note:</strong> Your HR account is pending admin approval. You'll receive an email once your account is reviewed.
+    </p>
+</div>
+{% else %}
+<div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 10px; padding: 25px; text-align: center; margin: 30px 0;">
+    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin-bottom: 10px;">Your Starting Balance</p>
+    <p style="color: #ffffff; font-size: 36px; font-weight: bold;">50 Tokens</p>
+    <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 10px;">Use them wisely for premium features!</p>
+</div>
+{% endif %}
+
+<p class="message">
+    Here's what you can do on CareerMate:
+</p>
+
+{% if is_hr %}
+<ul style="color: #555; margin: 15px 0 15px 20px;">
+    <li>📋 Post job openings for your company</li>
+    <li>👥 Manage and review applications</li>
+    <li>📊 Track your job listing performance</li>
+</ul>
+{% else %}
+<ul style="color: #555; margin: 15px 0 15px 20px;">
+    <li>📄 Create professional resumes with templates</li>
+    <li>✉️ Generate tailored cover letters & cold emails</li>
+    <li>🔍 Search and apply for jobs</li>
+    <li>🤖 Get skill roadmaps from SkillBot</li>
+    <li>🎤 Practice mock interviews</li>
+    <li>📈 Explore future market trends</li>
+</ul>
+{% endif %}
+
+<div style="text-align: center;">
+    <a href="{{ frontend_url }}/dashboard" class="button">Go to Dashboard →</a>
+</div>
+
+<p class="message" style="margin-top: 30px;">
+    Need help? Check out our <a href="{{ frontend_url }}/help" style="color: #667eea;">Help Center</a> or reach out to our support team.
+</p>
+
+<p class="message">
+    Happy career building! 🎯<br>
+    <span class="highlight">The CareerMate Team</span>
+</p>
+{% endblock %}

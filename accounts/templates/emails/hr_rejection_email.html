@@ -1,0 +1,40 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Application Update - CareerMate{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Hello, {{ user_name }}</h1>
+
+<p class="message">
+    Thank you for your interest in becoming an HR partner on CareerMate.
+</p>
+
+<p class="message">
+    After reviewing your application, we regret to inform you that we are unable to approve your HR account at this time.
+</p>
+
+<div style="background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+    <p style="color: #721c24; font-size: 14px; margin: 0;">
+        <strong>Reason:</strong><br>
+        {{ rejection_reason }}
+    </p>
+</div>
+
+<p class="message">
+    If you believe this was a mistake or if you have additional documentation to support your application, please feel free to:
+</p>
+
+<ul style="color: #555; margin: 15px 0 15px 20px;">
+    <li>📧 Contact our support team at support@careermate.com</li>
+    <li>📝 Submit a new application with updated information</li>
+</ul>
+
+<p class="message">
+    We appreciate your understanding and wish you the best in your HR career.
+</p>
+
+<p class="message">
+    Best regards,<br>
+    <span class="highlight">The CareerMate Team</span>
+</p>
+{% endblock %}

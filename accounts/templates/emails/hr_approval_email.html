@@ -1,0 +1,40 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Account Approved - CareerMate{% endblock %}
+
+{% block content %}
+<div style="text-align: center;">
+    <div class="success-icon">🎉</div>
+</div>
+
+<h1 class="greeting">Congratulations, {{ user_name }}!</h1>
+
+<p class="message">
+    Great news! Your CareerMate HR account has been <span class="highlight">approved</span> by our admin team.
+</p>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; padding: 25px; text-align: center; margin: 30px 0;">
+    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin-bottom: 10px;">Your Assigned Designation</p>
+    <p style="color: #ffffff; font-size: 24px; font-weight: bold;">{{ designation }}</p>
+</div>
+
+<p class="message">
+    You now have full access to CareerMate's HR features:
+</p>
+
+<ul style="color: #555; margin: 15px 0 15px 20px;">
+    <li>📋 Post and manage job listings</li>
+    <li>👥 Review job applications</li>
+    <li>📊 Access analytics and insights</li>
+    <li>💬 Connect with potential candidates</li>
+</ul>
+
+<div style="text-align: center;">
+    <a href="{{ frontend_url }}/login" class="button">Start Posting Jobs →</a>
+</div>
+
+<p class="message" style="margin-top: 30px;">
+    Welcome to the CareerMate HR community!<br>
+    <span class="highlight">The CareerMate Team</span>
+</p>
+{% endblock %}
