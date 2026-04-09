@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'resumes',
+    'skill_roadmap',
 ]
 
 MIDDLEWARE = [

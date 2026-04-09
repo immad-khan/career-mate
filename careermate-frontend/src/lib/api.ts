@@ -306,4 +306,37 @@ export const adminAPI = {
   },
 };
 
+// Skill Roadmap API
+export const roadmapAPI = {
+  // Generate Roadmap
+  generateRoadmap: async (data: { role: string; level: string }) => {
+    const response = await api.post('/skill-roadmap/generate/', data);
+    return response.data;
+  },
+
+  // Get Roadmaps
+  getRoadmaps: async () => {
+    const response = await api.get('/skill-roadmap/list/');
+    return response.data;
+  },
+
+  // Get Roadmap Detail
+  getRoadmapDetail: async (id: string) => {
+    const response = await api.get(`/skill-roadmap/${id}/`);
+    return response.data;
+  },
+
+  // Update Skill Progress
+  updateSkillProgress: async (roadmapId: string, data: { skill_id: string; is_completed: boolean }) => {
+    const response = await api.patch(`/skill-roadmap/${roadmapId}/`, data);
+    return response.data;
+  },
+
+  // SkillBot Chat
+  skillbotChat: async (data: { message: string }) => {
+    const response = await api.post('/skill-roadmap/chat/', data);
+    return response.data;
+  },
+};
+
 export default api;

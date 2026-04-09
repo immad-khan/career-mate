@@ -23,7 +23,8 @@ urlpatterns = [
     path('', api_root, name='api-root'),
     path('django-admin/', admin.site.urls),
     path('api/', include('accounts.urls')),
-    path('api/resumes/', include('resumes.urls')),  # Add this
+    path('api/resumes/', include('resumes.urls')),
+    path('api/skill-roadmap/', include('skill_roadmap.urls')),
 ]
 
 if settings.DEBUG:
