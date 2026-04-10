@@ -1,0 +1,62 @@
+[2026-04-10 11:33:44.852794+00:00] START: Role=dotnet developer, Level=beginner
+[2026-04-10 11:33:44.854388+00:00] Fetching key: gsk_6...
+[2026-04-10 11:33:47.626967+00:00] Calling Groq API...
+[2026-04-10 11:33:49.565880+00:00] CRASH: Error code: 400 - {'error': {'message': 'The model `llama3-70b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+Traceback (most recent call last):
+  File "D:\Desktop\careermate\skill_roadmap\views.py", line 77, in post
+    chat_completion = client.chat.completions.create(
+        messages=[
+    ...<10 lines>...
+        response_format={"type": "json_object"}
+    )
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\resources\chat\completions.py", line 461, in create
+    return self._post(
+           ~~~~~~~~~~^
+        "/openai/v1/chat/completions",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<45 lines>...
+        stream_cls=Stream[ChatCompletionChunk],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\_base_client.py", line 1280, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\_base_client.py", line 1067, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.BadRequestError: Error code: 400 - {'error': {'message': 'The model `llama3-70b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+[2026-04-10 11:34:43.398366+00:00] START: Role=backend developer, Level=beginner
+[2026-04-10 11:34:43.399926+00:00] Fetching key: gsk_6...
+[2026-04-10 11:34:45.460360+00:00] Calling Groq API...
+[2026-04-10 11:34:47.090948+00:00] CRASH: Error code: 400 - {'error': {'message': 'The model `llama3-70b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+Traceback (most recent call last):
+  File "D:\Desktop\careermate\skill_roadmap\views.py", line 77, in post
+    chat_completion = client.chat.completions.create(
+        messages=[
+    ...<10 lines>...
+        response_format={"type": "json_object"}
+    )
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\resources\chat\completions.py", line 461, in create
+    return self._post(
+           ~~~~~~~~~~^
+        "/openai/v1/chat/completions",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<45 lines>...
+        stream_cls=Stream[ChatCompletionChunk],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\_base_client.py", line 1280, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Desktop\careermate\.venv\Lib\site-packages\groq\_base_client.py", line 1067, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.BadRequestError: Error code: 400 - {'error': {'message': 'The model `llama3-70b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+
+[2026-04-10 11:40:06.757826+00:00] START: Role=dotnet developer, Level=beginner
+[2026-04-10 11:40:06.759509+00:00] Fetching key: gsk_6...
+[2026-04-10 11:40:08.904775+00:00] Calling Groq API...
+[2026-04-10 11:40:14.884615+00:00] Groq Response received length: 9752
+[2026-04-10 11:40:14.887296+00:00] Saving to DB...
+[2026-04-10 11:40:18.026750+00:00] SUCCESS!

@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+import os
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,12 +16,18 @@ from accounts.permissions import IsJobSeeker
 
 logger = logging.getLogger(__name__)
 
+def log_debug(msg):
+    with open("roadmap_debug.log", "a") as f:
+        f.write(f"[{timezone.now()}] {msg}\n")
+
 class GenerateRoadmapView(APIView):
     permission_classes = [IsAuthenticated, IsJobSeeker]
 
     def post(self, request):
         role = request.data.get('role')
         level = request.data.get('level', 'beginner')
+
+        log_debug(f"START: Role={role}, Level={level}")
 
         if not role:
             return Response({
@@ -35,6 +42,7 @@ class GenerateRoadmapView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            log_debug(f"Fetching key: {settings.GROQ_API_KEY[:5]}...")
             client = Groq(api_key=settings.GROQ_API_KEY)
             
             prompt = f"""
@@ -65,6 +73,7 @@ class GenerateRoadmapView(APIView):
             }}
             """
 
+            log_debug("Calling Groq API...")
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
@@ -76,12 +85,14 @@ class GenerateRoadmapView(APIView):
                         "content": prompt
                     }
                 ],
-                model="llama3-70b-8192",
+                model="llama-3.3-70b-versatile",
                 response_format={"type": "json_object"}
             )
 
             roadmap_content = chat_completion.choices[0].message.content
-            # Clean possible markdown code blocks if the response format isn't strictly respected by the model
+            log_debug(f"Groq Response received length: {len(roadmap_content)}")
+            
+            # Clean possible markdown code blocks
             if "```json" in roadmap_content:
                 roadmap_content = roadmap_content.split("```json")[1].split("```")[0].strip()
             elif "```" in roadmap_content:
@@ -89,6 +100,7 @@ class GenerateRoadmapView(APIView):
                 
             data = json.loads(roadmap_content)
 
+            log_debug("Saving to DB...")
             # Save to Database
             roadmap = SkillRoadmap.objects.create(
                 user=request.user,
@@ -113,6 +125,7 @@ class GenerateRoadmapView(APIView):
                         order=j
                     )
 
+            log_debug("SUCCESS!")
             return Response({
                 'success': True,
                 'message': 'Roadmap generated successfully',
@@ -120,8 +133,8 @@ class GenerateRoadmapView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            traceback.print_exc()
-            logger.error(f"Roadmap generation error: {str(e)}")
+            err_msg = traceback.format_exc()
+            log_debug(f"CRASH: {str(e)}\n{err_msg}")
             return Response({
                 'success': False,
                 'message': 'Failed to generate roadmap. Please try again later.',
@@ -155,7 +168,6 @@ class UserRoadmapDetailView(APIView):
         })
 
     def patch(self, request, pk):
-        # Used for toggling skill completion
         skill_id = request.data.get('skill_id')
         is_completed = request.data.get('is_completed', True)
         
@@ -186,8 +198,6 @@ class SkillBotChatView(APIView):
 
         try:
             client = Groq(api_key=settings.GROQ_API_KEY)
-            
-            # Fetch context if user has an active roadmap
             active_roadmap = SkillRoadmap.objects.filter(user=request.user, is_active=True).first()
             context = ""
             if active_roadmap:
@@ -204,12 +214,10 @@ class SkillBotChatView(APIView):
                         "content": message
                     }
                 ],
-                model="llama3-8b-8192",
+                model="llama-3.1-8b-instant",
             )
 
             ai_response = response.choices[0].message.content
-            
-            # Save chat history
             SkillBotChat.objects.create(
                 user=request.user,
                 message=message,

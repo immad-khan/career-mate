@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { FiEdit2, FiRefreshCw, FiBookOpen, FiCheckCircle, FiCircle, FiArrowRight, FiPieChart, FiTrendingUp, FiClock, FiSend, FiMessageSquare } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 import { roadmapAPI } from "@/lib/api"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
@@ -31,13 +32,14 @@ interface Roadmap {
   completion_percentage: number
 }
 
-export default function SkillRoadmap() {
+export default function SkillRoadmap({ initialView = "setup" }: { initialView?: "setup" | "roadmap" | "progress" }) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null)
   const [roleInput, setRoleInput] = useState("")
   const [levelInput, setLevelInput] = useState("")
-  const [view, setView] = useState<"setup" | "roadmap" | "progress">("setup")
+  const [view, setView] = useState<"setup" | "roadmap" | "progress">(initialView)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
   const [chatMessage, setChatMessage] = useState("")
   const [chatHistory, setChatHistory] = useState<{message: string, response: string}[]>([])
@@ -53,7 +55,9 @@ export default function SkillRoadmap() {
       const response = await roadmapAPI.getRoadmaps()
       if (response.success && response.data.length > 0) {
         setRoadmap(response.data[0])
-        setView("roadmap")
+        if (initialView === "roadmap") setView("roadmap")
+      } else {
+        if (initialView === "roadmap") setView("setup")
       }
     } catch (error) {
       console.error("Failed to fetch roadmap", error)
@@ -76,8 +80,8 @@ export default function SkillRoadmap() {
       const response = await roadmapAPI.generateRoadmap({ role: roleInput, level: levelInput })
       if (response.success) {
         setRoadmap(response.data)
-        setView("roadmap")
         toast.success("Roadmap generated successfully!")
+        router.push("/dashboard/skill-roadmap")
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to generate roadmap")
@@ -205,10 +209,10 @@ export default function SkillRoadmap() {
                   <p className="text-xs text-primary font-medium">Personalized 6-month roadmap</p>
                 </div>
                 <div className="mt-4 space-y-2">
-                  <Button variant="primary" className="w-full py-2 gap-2" onClick={() => setView("setup")}>
+                  <Button variant="primary" className="w-full py-2 gap-2" onClick={() => router.push("/dashboard/skillbot")}>
                     <FiEdit2 className="w-4 h-4" /> Edit role
                   </Button>
-                  <Button variant="outline" className="w-full py-2 gap-2" onClick={() => {setRoadmap(null); setView("setup")}}>
+                  <Button variant="outline" className="w-full py-2 gap-2" onClick={() => router.push("/dashboard/skillbot")}>
                     <FiRefreshCw className="w-4 h-4" /> Start over
                   </Button>
                 </div>
@@ -408,19 +412,23 @@ export default function SkillRoadmap() {
                    </div>
                    <div className="flex-1 space-y-6">
                       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
-                        <p className="text-sm font-medium text-gray-700">You're ahead of the pace for your goal.</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {roadmap.completion_percentage > 0 
+                            ? "Great job! You're making steady progress toward your goal." 
+                            : "Ready to start? Begin with the foundational skills below."}
+                        </p>
                         <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-                           <div className="h-full bg-primary" style={{ width: '70%' }}></div>
+                           <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${roadmap.completion_percentage}%` }}></div>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-gray-50 rounded-lg">
-                           <p className="text-xs text-gray-400">Completed this week</p>
-                           <p className="text-xl font-bold text-gray-900">4 skills</p>
+                           <p className="text-xs text-gray-400">Completed skills</p>
+                           <p className="text-xl font-bold text-gray-900">{roadmap.sections.flatMap(s => s.skills).filter(sk => sk.is_completed).length} skills</p>
                         </div>
                         <div className="p-3 bg-gray-50 rounded-lg">
-                           <p className="text-xs text-gray-400">Time invested</p>
-                           <p className="text-xl font-bold text-gray-900">6.5 hrs</p>
+                           <p className="text-xs text-gray-400">Current streak</p>
+                           <p className="text-xl font-bold text-gray-900">{roadmap.completion_percentage > 0 ? "1 day" : "0 days"}</p>
                         </div>
                       </div>
                    </div>

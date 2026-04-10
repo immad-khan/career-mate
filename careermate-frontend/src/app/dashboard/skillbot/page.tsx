@@ -4,13 +4,14 @@ export default function SkillBotPage() {
   return (
     <div className="container py-6 space-y-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">SkillBot & Roadmap</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">SkillBot</h1>
         <p className="text-gray-500">
-          Personalized AI roadmap to help you master the skills needed for your dream role.
+          Tell SkillBot your target role, and it will build your career path.
         </p>
       </div>
       
-      <SkillRoadmap />
+      {/* Force setup view for the generator page */}
+      <SkillRoadmap initialView="setup" />
     </div>
   )
 }

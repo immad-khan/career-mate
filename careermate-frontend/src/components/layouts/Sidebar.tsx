@@ -76,6 +76,12 @@ const navItems: NavItem[] = [
     roles: ["job_seeker"],
   },
   {
+    label: "Skill Roadmap",
+    href: "/dashboard/skill-roadmap",
+    icon: <FiCheckCircle className="w-5 h-5" />,
+    roles: ["job_seeker"],
+  },
+  {
     label: "My Tokens",
     href: "/dashboard/tokens",
     icon: <FiCreditCard className="w-5 h-5" />,
