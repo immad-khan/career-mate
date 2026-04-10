@@ -96,6 +96,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
+# Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -168,3 +169,6 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 # OTP Settings
 OTP_EXPIRY_MINUTES = 10
+
+# AI Configuration
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')

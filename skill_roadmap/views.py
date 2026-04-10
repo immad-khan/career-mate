@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -66,29 +67,36 @@ class GenerateRoadmapView(APIView):
 
             chat_completion = client.chat.completions.create(
                 messages=[
-                    {{
+                    {
                         "role": "system",
                         "content": "You are an expert career coach and technical architect. Provide structured, accurate learning roadmaps in JSON format."
-                    }},
-                    {{
+                    },
+                    {
                         "role": "user",
                         "content": prompt
-                    }}
+                    }
                 ],
                 model="llama3-70b-8192",
-                response_format={{"type": "json_object"}}
+                response_format={"type": "json_object"}
             )
 
-            roadmap_data = json.loads(chat_completion.choices[0].message.content)
+            roadmap_content = chat_completion.choices[0].message.content
+            # Clean possible markdown code blocks if the response format isn't strictly respected by the model
+            if "```json" in roadmap_content:
+                roadmap_content = roadmap_content.split("```json")[1].split("```")[0].strip()
+            elif "```" in roadmap_content:
+                roadmap_content = roadmap_content.split("```")[1].split("```")[0].strip()
+                
+            data = json.loads(roadmap_content)
 
             # Save to Database
             roadmap = SkillRoadmap.objects.create(
                 user=request.user,
-                role=roadmap_data.get('role', role),
-                level=roadmap_data.get('level', level)
+                role=data.get('role', role),
+                level=data.get('level', level)
             )
 
-            for i, section_data in enumerate(roadmap_data.get('sections', [])):
+            for i, section_data in enumerate(data.get('sections', [])):
                 section = RoadmapSection.objects.create(
                     roadmap=roadmap,
                     title=section_data.get('title'),
@@ -112,6 +120,7 @@ class GenerateRoadmapView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            traceback.print_exc()
             logger.error(f"Roadmap generation error: {str(e)}")
             return Response({
                 'success': False,
@@ -186,14 +195,14 @@ class SkillBotChatView(APIView):
 
             response = client.chat.completions.create(
                 messages=[
-                    {{
+                    {
                         "role": "system",
                         "content": f"You are SkillBot, a helpful AI career assistant. {context} Provide short, encouraging, and accurate advice."
-                    }},
-                    {{
+                    },
+                    {
                         "role": "user",
                         "content": message
-                    }}
+                    }
                 ],
                 model="llama3-8b-8192",
             )
@@ -209,13 +218,14 @@ class SkillBotChatView(APIView):
 
             return Response({
                 'success': True,
-                'data': {{
+                'data': {
                     'message': message,
                     'response': ai_response
-                }}
+                }
             })
 
         except Exception as e:
+            traceback.print_exc()
             return Response({
                 'success': False,
                 'message': 'SkillBot is currently unavailable.',
