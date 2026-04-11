@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { FiSearch, FiMapPin, FiBriefcase, FiClock, FiDollarSign, FiExternalLink, FiHeart, FiCheck, FiArrowLeft, FiAlertCircle, FiChevronRight, FiFilter, FiTrendingUp, FiGlobe } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
-import { jobCrawlerAPI } from "@/lib/api"
+import { jobCrawlerAPI, jobsAPI } from "@/lib/api"
 import Button from "@/components/ui/Button"
 import Spinner from "@/components/ui/Spinner"
 
@@ -20,6 +20,8 @@ interface Job {
   description: string
   is_remote: boolean
   job_type: string
+  is_local?: boolean
+  local_uuid?: string
 }
 
 const FILTERS = [
@@ -116,10 +118,21 @@ export default function JobCrawler() {
 
   const handleApplyJob = async (job: Job) => {
     try {
+      if (job.is_local && job.local_uuid) {
+        // Apply to internal jobs
+        const formData = new FormData()
+        formData.append('job', job.local_uuid)
+        const res = await jobsAPI.applyForJob(formData)
+        
+        setAppliedJobIds(new Set([...Array.from(appliedJobIds), job.id]))
+        toast.success("Application submitted successfully to internal job")
+        return
+      }
+
       const res = await jobCrawlerAPI.applyJob(job)
       if (res.success) {
         setAppliedJobIds(new Set([...Array.from(appliedJobIds), job.id]))
-        toast.success("Application submitted successfully")
+        toast.success("Application submitted successfully to external job")
         window.open(job.job_url, '_blank')
       }
     } catch (error) {

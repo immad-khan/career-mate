@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/skill-roadmap/', include('skill_roadmap.urls')),
     path('api/market-trends/', include('market_trends.urls')),
     path('api/job-crawler/', include('job_crawler.urls')),
+    path('api/', include('jobs.urls')),
 ]
 
 if settings.DEBUG:

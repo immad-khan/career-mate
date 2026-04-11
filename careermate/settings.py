@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'skill_roadmap',
     'market_trends',
     'job_crawler',
+    'jobs',
 ]
 
 MIDDLEWARE = [

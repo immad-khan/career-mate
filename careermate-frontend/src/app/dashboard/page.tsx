@@ -14,6 +14,30 @@ import {
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (user?.role === 'hr') {
+      window.location.href = '/dashboard/hr';
+    }
+  }, [user]);
+
+  React.useEffect(() => {
+    // We could import notificationAPI here
+    import('@/lib/api').then(({ notificationAPI }) => {
+      notificationAPI.getNotifications().then(data => {
+        setNotifications(data.filter((n: any) => !n.is_read));
+      }).catch(() => {});
+    });
+  }, []);
+
+  const markNotificationRead = async (id: string) => {
+    try {
+      const { notificationAPI } = await import('@/lib/api');
+      await notificationAPI.markRead(id);
+      setNotifications(notifications.filter(n => n.id !== id));
+    } catch {}
+  };
 
   const stats = [
     { 
@@ -131,6 +155,26 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 transition-colors duration-500 bg-gray-50/50 p-4 md:p-8">
+      {/* Notifications Section */}
+      {notifications.length > 0 && (
+        <div className="space-y-3 mb-6">
+          {notifications.map(notification => (
+            <div key={notification.id} className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex justify-between items-start">
+              <div>
+                <h4 className="font-bold text-blue-900 flex items-center gap-2"><FiBell /> {notification.title}</h4>
+                <p className="text-sm text-blue-700 mt-1">{notification.message}</p>
+              </div>
+              <button 
+                onClick={() => markNotificationRead(notification.id)}
+                className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-full transition-colors"
+               >
+                 Mark as read
+               </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Welcome Section */}
       <div className="rounded-2xl p-8 border transition-all duration-300 bg-white border-green-100 shadow-sm">
         <div className="flex justify-between items-start">

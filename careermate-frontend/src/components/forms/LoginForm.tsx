@@ -64,6 +64,8 @@ export default function BeautifulLoginForm() {
 
         if (response.data.user.role === "admin") {
           router.push("/dashboard/admin")
+        } else if (response.data.user.role === "hr") {
+          router.push("/dashboard/hr")
         } else {
           router.push("/dashboard")
         }

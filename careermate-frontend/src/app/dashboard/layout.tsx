@@ -50,8 +50,7 @@ const menuItems: MenuItem[] = [
 ];
 
 const hrMenuItems: MenuItem[] = [
-  { label: 'Dashboard', icon: <FiHome className="w-5 h-5" />, href: '/dashboard' },
-  { label: 'HR Job Posting Panel', icon: <FiBriefcase className="w-5 h-5" />, href: '/dashboard/hr-panel' },
+  { label: 'Dashboard', icon: <FiHome className="w-5 h-5" />, href: '/dashboard/hr' },
   { label: 'Profile', icon: <FiUser className="w-5 h-5" />, href: '/dashboard/profile' },
   { label: 'Settings', icon: <FiSettings className="w-5 h-5" />, href: '/dashboard/settings' },
 ];

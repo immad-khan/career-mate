@@ -242,4 +242,54 @@ export const jobCrawlerAPI = {
   },
 };
 
+// Jobs API
+export const jobsAPI = {
+  getJobs: async () => {
+    const response = await api.get('/jobs/');
+    return response.data;
+  },
+  createJob: async (data: any) => {
+    const response = await api.post('/jobs/', data);
+    return response.data;
+  },
+  getJob: async (id: string) => {
+    const response = await api.get(`/jobs/${id}/`);
+    return response.data;
+  },
+  updateJob: async (id: string, data: any) => {
+    const response = await api.patch(`/jobs/${id}/`, data);
+    return response.data;
+  },
+  deleteJob: async (id: string) => {
+    const response = await api.delete(`/jobs/${id}/`);
+    return response.data;
+  },
+  getApplications: async () => {
+    const response = await api.get('/applications/');
+    return response.data;
+  },
+  applyForJob: async (data: any) => {
+    const response = await api.post('/applications/apply/', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+  updateApplicationStatus: async (id: string, status: string) => {
+    const response = await api.patch(`/applications/${id}/status/`, { status });
+    return response.data;
+  },
+};
+
+// Notification API
+export const notificationAPI = {
+  getNotifications: async () => {
+    const response = await api.get('/notifications/');
+    return response.data;
+  },
+  markRead: async (id: string) => {
+    const response = await api.post(`/notifications/${id}/read/`);
+    return response.data;
+  },
+};
+
 export default api;
