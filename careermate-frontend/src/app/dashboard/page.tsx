@@ -296,7 +296,7 @@ export default function DashboardPage() {
             placeholder="Search..."
             className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
           />
-          <div className="space-y-3">
+          <div className="space-y-3 mb-4">
             {jobCrawlerCard.jobs.map((job, i) => (
               <div key={i} className="p-3 rounded-xl border border-gray-100 bg-gray-50">
                 <p className="text-xs font-bold uppercase text-gray-900">{job.title}</p>
@@ -304,6 +304,9 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+          <Link href="/dashboard/jobs" className="block text-center bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
+            {jobCrawlerCard.buttonText}
+          </Link>
         </div>
 
         {/* Skill Roadmap Preview */}

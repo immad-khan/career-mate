@@ -201,4 +201,32 @@ export const marketTrendsAPI = {
   },
 };
 
+// Job Crawler API
+export const jobCrawlerAPI = {
+  searchJobs: async (keyword: string, location: string = 'Pakistan') => {
+    const response = await api.post('/job-crawler/search/', { keyword, location });
+    return response.data;
+  },
+  saveJob: async (jobData: any) => {
+    const response = await api.post('/job-crawler/save/', jobData);
+    return response.data;
+  },
+  getSavedJobs: async () => {
+    const response = await api.get('/job-crawler/save/');
+    return response.data;
+  },
+  unsaveJob: async (jobId: string) => {
+    const response = await api.delete(`/job-crawler/save/${jobId}/`);
+    return response.data;
+  },
+  applyJob: async (jobData: any) => {
+    const response = await api.post('/job-crawler/apply/', jobData);
+    return response.data;
+  },
+  getAppliedJobs: async () => {
+    const response = await api.get('/job-crawler/apply/');
+    return response.data;
+  },
+};
+
 export default api;
