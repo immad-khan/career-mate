@@ -182,8 +182,12 @@ class HRRegistrationView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def post(self, request):
-        print(f"DEBUG: Request Content-Type: {request.content_type}")
-        print(f"DEBUG: Request FILES: {request.FILES.keys()}")
+        print("="*50)
+        print(f"DEBUG: HR Registration Request Received")
+        print(f"DEBUG: Content-Type: {request.content_type}")
+        print(f"DEBUG: Data keys: {request.data.keys()}")
+        print(f"DEBUG: Files: {request.FILES.keys()}")
+        print("="*50)
         
         serializer = HRRegistrationSerializer(data=request.data)
         

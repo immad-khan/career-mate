@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FiSearch, FiMapPin, FiBriefcase, FiClock, FiDollarSign, FiExternalLink, FiHeart, FiCheck, FiArrowLeft, FiAlertCircle, FiChevronRight, FiFilter, FiTrendingUp } from "react-icons/fi"
+import { FiSearch, FiMapPin, FiBriefcase, FiClock, FiDollarSign, FiExternalLink, FiHeart, FiCheck, FiArrowLeft, FiAlertCircle, FiChevronRight, FiFilter, FiTrendingUp, FiGlobe } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { jobCrawlerAPI } from "@/lib/api"

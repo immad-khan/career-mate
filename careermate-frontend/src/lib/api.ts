@@ -5,9 +5,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/a
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Add a request interceptor to include the JWT token in all requests
@@ -139,11 +136,11 @@ export const resumeAPI = {
 
 // Admin API
 export const adminAPI = {
-  getStatistics: async () => {
+  getStats: async () => {
     const response = await api.get('/admin/stats/');
     return response.data;
   },
-  getHRApprovals: async () => {
+  getPendingHRs: async () => {
     const response = await api.get('/admin/hr/pending/');
     return response.data;
   },
@@ -161,6 +158,22 @@ export const adminAPI = {
   },
   updateHRDesignation: async (hrId: string, data: { designation: string }) => {
     const response = await api.put(`/admin/hr/${hrId}/designation/`, data);
+    return response.data;
+  },
+  getUsers: async (params?: { search?: string; role?: string }) => {
+    const response = await api.get('/admin/users/', { params });
+    return response.data;
+  },
+  updateUser: async (userId: string, data: any) => {
+    const response = await api.patch(`/admin/users/${userId}/update/`, data);
+    return response.data;
+  },
+  deleteUser: async (userId: string) => {
+    const response = await api.delete(`/admin/users/${userId}/delete/`);
+    return response.data;
+  },
+  changeUserPassword: async (userId: string, data: { new_password: string }) => {
+    const response = await api.post(`/admin/users/${userId}/change-password/`, data);
     return response.data;
   },
 };
