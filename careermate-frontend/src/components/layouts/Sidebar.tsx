@@ -21,6 +21,7 @@ import {
   FiX,
   FiCreditCard,
   FiLogOut,
+  FiActivity,
 } from "react-icons/fi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
@@ -79,6 +80,12 @@ const navItems: NavItem[] = [
     label: "Skill Roadmap",
     href: "/dashboard/roadmap",
     icon: <FiCheckCircle className="w-5 h-5" />,
+    roles: ["job_seeker"],
+  },
+  {
+    label: "Market Trends",
+    href: "/dashboard/market-trends",
+    icon: <FiActivity className="w-5 h-5" />,
     roles: ["job_seeker"],
   },
   {
@@ -307,8 +314,6 @@ export default function BeautifulSidebar({ isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
-        
-    
     </>
   )
 }
