@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'accounts',
     'resumes',
     'skill_roadmap',
+    'market_trends',
 ]
 
 MIDDLEWARE = [

@@ -77,7 +77,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Skill Roadmap",
-    href: "/dashboard/skill-roadmap",
+    href: "/dashboard/roadmap",
     icon: <FiCheckCircle className="w-5 h-5" />,
     roles: ["job_seeker"],
   },

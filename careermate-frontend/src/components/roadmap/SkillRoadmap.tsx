@@ -81,7 +81,7 @@ export default function SkillRoadmap({ initialView = "setup" }: { initialView?: 
       if (response.success) {
         setRoadmap(response.data)
         toast.success("Roadmap generated successfully!")
-        router.push("/dashboard/skill-roadmap")
+        router.push("/dashboard/roadmap")
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to generate roadmap")
