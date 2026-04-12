@@ -28,7 +28,7 @@ class JobListCreateView(generics.ListCreateAPIView):
         # HR sees their own jobs, everyone else sees all active jobs
         user = self.request.user
         if user.is_authenticated and user.role == 'hr':
-            hr_profile = getattr(user, 'hrprofile', None)
+            hr_profile = getattr(user, 'hr_profile', None)
             if hr_profile:
                 return Job.objects.filter(hr_profile=hr_profile)
         return Job.objects.filter(status='active')
@@ -39,7 +39,7 @@ class JobListCreateView(generics.ListCreateAPIView):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only HR can create jobs.")
         
-        hr_profile = getattr(user, 'hrprofile', None)
+        hr_profile = getattr(user, 'hr_profile', None)
         if not hr_profile:
             from rest_framework.exceptions import ValidationError
             raise ValidationError("HR Profile not found.")
@@ -75,7 +75,7 @@ class ApplicationListView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'hr':
-            hr_profile = getattr(user, 'hrprofile', None)
+            hr_profile = getattr(user, 'hr_profile', None)
             if hr_profile:
                 return Application.objects.filter(job__hr_profile=hr_profile)
             return Application.objects.none()
@@ -93,7 +93,7 @@ class ApplicationUpdateStatusView(APIView):
         application = get_object_or_404(Application, pk=pk)
         
         # Verify hr owns the job
-        hr_profile = getattr(request.user, 'hrprofile', None)
+        hr_profile = getattr(request.user, 'hr_profile', None)
         if application.job.hr_profile != hr_profile:
             return Response({"error": "You do not have permission to update this application."}, status=status.HTTP_403_FORBIDDEN)
             

@@ -55,10 +55,32 @@ class JobSearchView(APIView):
                 }
             ] if term.lower() != "unsupported" else []
 
+        # Load local jobs using jobs app
+        from jobs.models import Job
+        local_jobs_qs = Job.objects.filter(status='active', title__icontains=keyword)
+        local_jobs = []
+        for j in local_jobs_qs:
+            local_jobs.append({
+                'id': f"local-{str(j.id)}",
+                'site': 'CareerMate',
+                'job_url': f'/dashboard/jobs/{j.id}', # Internally managed
+                'title': j.title,
+                'company': j.hr_profile.company_name,
+                'location': 'N/A', # can add if model is updated
+                'date_posted': j.created_at.strftime('%Y-%m-%d'),
+                'salary': f"{j.salary_min} - {j.salary_max}" if j.salary_min else "Not disclosed",
+                'description': j.description,
+                'is_remote': j.job_type == 'Remote',
+                'job_type': j.job_type,
+                'is_local': True,
+                'local_uuid': str(j.id)
+            })
+
         if not scrape_jobs:
+            mock_jobs = get_mock_jobs(keyword)
             return Response({
                 'success': True,
-                'data': get_mock_jobs(keyword),
+                'data': local_jobs + mock_jobs,
                 'message': 'Service initializing. Showing curated results.'
             }, status=status.HTTP_200_OK)
 
@@ -75,32 +97,27 @@ class JobSearchView(APIView):
             if jobs_df is None or jobs_df.empty:
                 return Response({
                     'success': True,
-                    'data': [],
-                    'message': 'No jobs match your search. Try different keywords or filters'
+                    'data': local_jobs,
+                    'message': 'No external jobs match your search. Showing internal listings.' if local_jobs else 'No jobs match your search.'
                 }, status=status.HTTP_200_OK)
 
             # Convert dataframe to list of dicts
-            # JobSpy columns typically include: id, site, job_url, title, company, location, date_posted, etc.
-            # Load local jobs using jobs app
-            from jobs.models import Job
-            local_jobs_qs = Job.objects.filter(status='active', title__icontains=keyword)
-            local_jobs = []
-            for j in local_jobs_qs:
-                local_jobs.append({
-                    'id': f"local-{str(j.id)}",
-                    'site': 'CareerMate',
-                    'job_url': f'/dashboard/jobs/{j.id}', # Internally managed
-                    'title': j.title,
-                    'company': j.hr_profile.company_name,
-                    'location': 'N/A', # can add if model is updated
-                    'date_posted': j.created_at.strftime('%Y-%m-%d'),
-                    'salary': f"{j.salary_min} - {j.salary_max}" if j.salary_min else "Not disclosed",
-                    'description': j.description,
-                    'is_remote': j.job_type == 'Remote',
-                    'job_type': j.job_type,
-                    'is_local': True,
-                    'local_uuid': str(j.id)
-                })
+            jobs_list = []
+            for _, row in jobs_df.iterrows():
+                job = {
+                    'id': str(row.get('id', '')),
+                    'site': row.get('site', 'unknown'),
+                    'job_url': row.get('job_url', ''),
+                    'title': row.get('title', 'Unknown Title'),
+                    'company': row.get('company', 'Unknown Company'),
+                    'location': row.get('location', 'Remote' if row.get('is_remote') else 'N/A'),
+                    'date_posted': str(row.get('date_posted', '')),
+                    'salary': f"{row.get('min_amount', '')} - {row.get('max_amount', '')} {row.get('currency', '')}" if row.get('min_amount') else "Not disclosed",
+                    'description': row.get('description', ''),
+                    'is_remote': bool(row.get('is_remote', False)),
+                    'job_type': row.get('job_type', 'Full-time'),
+                }
+                jobs_list.append(job)
 
             jobs_list = local_jobs + jobs_list
 
