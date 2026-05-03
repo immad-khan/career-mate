@@ -38,9 +38,10 @@ export class BaseCrawler {
         try {
             this.logger.info('Initializing browser...');
             this.browser = await puppeteer.launch({
-                headless: this.options.headless,
+                headless: 'new',
+                executablePath: 'C:\\Users\\Immad Ahmed\\.cache\\puppeteer\\chrome\\win64-121.0.6167.85\\chrome-win64\\chrome.exe',
                 slowMo: this.options.slowMo,
-                protocolTimeout: 60000,
+                protocolTimeout: 120000,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',

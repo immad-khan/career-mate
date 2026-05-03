@@ -10,24 +10,15 @@ export class RozeeCrawler extends BaseCrawler {
         const {
             keyword = '',
             location = '',
-            category = '',
-            experience = '',
-            salary = '',
-            jobType = '',
             page = 1
         } = searchParams;
 
-        const params = new URLSearchParams();
-        
-        if (keyword) params.set('q', keyword);
-        if (location) params.set('l', location);
-        if (category) params.set('c', category);
-        if (experience) params.set('e', experience);
-        if (salary) params.set('s', salary);
-        if (jobType) params.set('jt', jobType);
-        if (page > 1) params.set('p', page);
-
-        return `${this.baseUrl}/jobs?${params.toString()}`;
+        // Rozee uses path-based search: /job/jsearch/q/keyword
+        let url = `${this.baseUrl}/job/jsearch/q/${encodeURIComponent(keyword)}`;
+        if (page > 1) {
+            url += `/fp/${page}`;
+        }
+        return url;
     }
 
     async extractJobData() {

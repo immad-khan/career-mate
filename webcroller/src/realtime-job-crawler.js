@@ -23,83 +23,82 @@ class RealtimeJobCrawler {
     async initialize() {
         console.log('🚀 Initializing Real-time Job Crawler...');
 
-        // Launch browser with anti-detection settings
-        this.browser = await puppeteer.launch({
-            headless: 'new',
-            protocolTimeout: 60000, // Increased timeout for creating targets
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--disable-gpu',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--user-agent=' + this.userAgent.toString()
-            ]
-        });
-
-        console.log('✅ Browser initialized with anti-detection measures');
+        try {
+            if (this.browser) await this.browser.close();
+            
+            this.browser = await puppeteer.launch({
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
+                    '--no-zygote',
+                    '--single-process'
+                ]
+            });
+            console.log('✅ Browser initialized successfully');
+        } catch (error) {
+            console.error('❌ Browser initialization failed:', error.message);
+        }
     }
 
     async searchJobs(query, location, maxResults = 50) {
         console.log(`🔍 Searching for "${query}" in "${location}"...`);
 
+        // Re-initialize if browser is disconnected
+        if (!this.browser || !this.browser.connected) {
+            await this.initialize();
+        }
+
         const allJobs = [];
 
-        // Search across all sources SEQUENTIALLY to prevent resource exhaustion
         for (const [sourceName, crawler] of Object.entries(this.sources)) {
             try {
-                const results = await this.searchFromSource(sourceName, crawler, query, location, Math.ceil(maxResults / 2));
-                console.log(`✅ ${sourceName}: Found ${results.length} jobs`);
-                allJobs.push(...results);
+                // Set a strict 30s timeout per source so one slow site doesn't kill the whole search
+                const sourceResults = await Promise.race([
+                    this.searchFromSource(sourceName, crawler, query, location, 15),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 35000))
+                ]);
                 
-                // If we already have enough jobs, we can stop early
-                if (allJobs.length >= maxResults) {
-                    console.log(`✨ Reached target results count (${maxResults}), stopping search.`);
-                    break;
+                if (sourceResults && sourceResults.length > 0) {
+                    console.log(`✅ ${sourceName}: Found ${sourceResults.length} jobs`);
+                    allJobs.push(...sourceResults);
                 }
+
+                if (allJobs.length >= maxResults) break;
             } catch (error) {
-                console.error(`❌ Error searching ${sourceName}:`, error.message);
+                console.error(`⚠️ Skipping ${sourceName} due to: ${error.message}`);
             }
         }
 
-        // Remove duplicates and return sorted results
         const uniqueJobs = this.removeDuplicates(allJobs);
         console.log(`🎯 Total unique jobs found: ${uniqueJobs.length}`);
-
         return uniqueJobs.slice(0, maxResults);
     }
 
     async searchFromSource(sourceName, crawler, query, location, maxResults) {
         console.log(`🔎 Searching ${sourceName}...`);
-
+        let page = null;
         try {
-            const page = await this.browser.newPage();
-
-            // Apply anti-detection measures
+            page = await this.browser.newPage();
             await this.applyAntiDetection(page);
-
+            
+            // Set a timeout for the navigation itself
+            await page.setDefaultNavigationTimeout(30000);
+            
             const jobs = await crawler.search(page, query, location, maxResults);
-
-            await page.close();
-
-            // Add delay between sources
-            await this.randomDelay(1000, 3000);
-
-            return jobs.map(job => ({
+            
+            return (jobs || []).map(job => ({
                 ...job,
                 source: sourceName,
-                searchQuery: query,
-                searchLocation: location,
                 foundAt: new Date().toISOString()
             }));
-
         } catch (error) {
             console.error(`Error in ${sourceName}:`, error.message);
             return [];
+        } finally {
+            if (page) await page.close().catch(() => {});
         }
     }
 
