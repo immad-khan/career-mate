@@ -76,6 +76,50 @@ class JobSearchView(APIView):
                 'local_uuid': str(j.id)
             })
 
+        # Try to use the new Node.js Scraper API
+        try:
+            import requests
+            api_url = "http://localhost:8081/search-jobs"
+            payload = {
+                "query": keyword,
+                "location": location,
+                "maxResults": 40
+            }
+            
+            response = requests.post(api_url, json=payload, timeout=60)
+            
+            if response.status_code == 200:
+                api_data = response.json()
+                external_jobs = api_data.get('jobs', [])
+                
+                # Format the results to match our frontend expectations
+                formatted_jobs = []
+                for job in external_jobs:
+                    formatted_jobs.append({
+                        'id': job.get('id'),
+                        'site': job.get('source', 'External'),
+                        'job_url': job.get('jobUrl', ''),
+                        'title': job.get('title', 'Unknown Title'),
+                        'company': job.get('company', 'Unknown Company'),
+                        'location': job.get('location', 'N/A'),
+                        'date_posted': job.get('foundAt', 'Recently'),
+                        'salary': job.get('salary', 'Not disclosed'),
+                        'description': job.get('description', ''),
+                        'is_remote': 'remote' in job.get('location', '').lower(),
+                        'job_type': 'Full-time',
+                    })
+                
+                return Response({
+                    'success': True,
+                    'data': local_jobs + formatted_jobs,
+                    'count': len(local_jobs) + len(formatted_jobs)
+                }, status=status.HTTP_200_OK)
+            
+        except Exception as api_err:
+            print(f"Node.js API Error: {api_err}")
+            # Fallback to original logic if API fails
+            pass
+
         if not scrape_jobs:
             mock_jobs = get_mock_jobs(keyword)
             return Response({
@@ -85,7 +129,7 @@ class JobSearchView(APIView):
             }, status=status.HTTP_200_OK)
 
         try:
-            # Scrape jobs using jobspy
+            # Scrape jobs using jobspy (Legacy/Fallback)
             jobs_df = scrape_jobs(
                 site_name=site_names,
                 search_term=keyword,

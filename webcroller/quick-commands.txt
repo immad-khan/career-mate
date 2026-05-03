@@ -1,0 +1,55 @@
+# 🚀 QUICK JOB SEARCH COMMANDS - Copy & Paste These!
+
+## 💻 TECH JOBS
+node search-any-job.js "software engineer"
+node search-any-job.js "web developer" "Karachi"
+node search-any-job.js "data scientist" "Lahore"
+node search-any-job.js "mobile developer" "Islamabad"
+node search-any-job.js "devops engineer"
+node search-any-job.js "ui designer" "Karachi"
+node search-any-job.js "qa engineer" "Lahore"
+
+## 🏥 MEDICAL JOBS  
+node search-any-job.js "doctor" "Karachi"
+node search-any-job.js "nurse" "Lahore"
+node search-any-job.js "pharmacist" "Islamabad"
+node search-any-job.js "medical technician"
+node search-any-job.js "physiotherapist" "Karachi"
+
+## 👨‍🏫 EDUCATION JOBS
+node search-any-job.js "teacher"
+node search-any-job.js "english teacher" "Lahore"
+node search-any-job.js "math teacher" "Karachi"
+node search-any-job.js "science teacher" "Islamabad"
+node search-any-job.js "principal"
+
+## 💼 BUSINESS JOBS
+node search-any-job.js "accountant" "Karachi"
+node search-any-job.js "marketing manager" "Lahore"
+node search-any-job.js "sales executive"
+node search-any-job.js "hr manager" "Islamabad"
+node search-any-job.js "business analyst" "Karachi"
+
+## 🎨 CREATIVE JOBS
+node search-any-job.js "graphic designer" "Karachi"
+node search-any-job.js "content writer" "Lahore"
+node search-any-job.js "video editor" "Islamabad"
+node search-any-job.js "social media manager"
+
+## 🔧 ENGINEERING JOBS
+node search-any-job.js "mechanical engineer" "Karachi"
+node search-any-job.js "electrical engineer" "Lahore"
+node search-any-job.js "civil engineer" "Islamabad"
+node search-any-job.js "chemical engineer"
+
+## 🏪 SERVICE JOBS
+node search-any-job.js "receptionist" "Karachi"
+node search-any-job.js "customer service" "Lahore"
+node search-any-job.js "security guard"
+node search-any-job.js "driver" "Islamabad"
+
+## 📊 FINANCE JOBS
+node search-any-job.js "financial analyst" "Karachi"
+node search-any-job.js "bank manager" "Lahore"
+node search-any-job.js "investment advisor" "Islamabad"
+node search-any-job.js "tax consultant"
