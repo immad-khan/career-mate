@@ -86,7 +86,7 @@ class JobSearchView(APIView):
                 "maxResults": 40
             }
             
-            response = requests.post(api_url, json=payload, timeout=60)
+            response = requests.post(api_url, json=payload, timeout=120)
             
             if response.status_code == 200:
                 api_data = response.json()

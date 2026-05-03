@@ -26,6 +26,7 @@ class RealtimeJobCrawler {
         // Launch browser with anti-detection settings
         this.browser = await puppeteer.launch({
             headless: 'new',
+            protocolTimeout: 60000, // Increased timeout for creating targets
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -47,30 +48,23 @@ class RealtimeJobCrawler {
         console.log(`🔍 Searching for "${query}" in "${location}"...`);
 
         const allJobs = [];
-        const searchPromises = [];
 
-        // Search across all sources in parallel
+        // Search across all sources SEQUENTIALLY to prevent resource exhaustion
         for (const [sourceName, crawler] of Object.entries(this.sources)) {
-            searchPromises.push(
-                this.searchFromSource(sourceName, crawler, query, location, maxResults)
-                    .catch(error => {
-                        console.error(`❌ Error searching ${sourceName}:`, error.message);
-                        return [];
-                    })
-            );
-        }
-
-        const results = await Promise.allSettled(searchPromises);
-
-        results.forEach((result, index) => {
-            const sourceName = Object.keys(this.sources)[index];
-            if (result.status === 'fulfilled') {
-                console.log(`✅ ${sourceName}: Found ${result.value.length} jobs`);
-                allJobs.push(...result.value);
-            } else {
-                console.log(`❌ ${sourceName}: Failed to fetch jobs`);
+            try {
+                const results = await this.searchFromSource(sourceName, crawler, query, location, Math.ceil(maxResults / 2));
+                console.log(`✅ ${sourceName}: Found ${results.length} jobs`);
+                allJobs.push(...results);
+                
+                // If we already have enough jobs, we can stop early
+                if (allJobs.length >= maxResults) {
+                    console.log(`✨ Reached target results count (${maxResults}), stopping search.`);
+                    break;
+                }
+            } catch (error) {
+                console.error(`❌ Error searching ${sourceName}:`, error.message);
             }
-        });
+        }
 
         // Remove duplicates and return sorted results
         const uniqueJobs = this.removeDuplicates(allJobs);
