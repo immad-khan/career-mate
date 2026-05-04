@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   FiBell, 
   FiLock, 
@@ -19,13 +20,28 @@ import toast from 'react-hot-toast';
 
 const SettingsPage = () => {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || 'profile');
+
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const tabs = [
     { id: 'profile', label: 'Profile Information', icon: <FiUser /> },
-    { id: 'notifications', label: 'Notifications', icon: <FiBell /> },
     { id: 'security', label: 'Security & Privacy', icon: <FiLock /> },
     { id: 'theme', label: 'Appearance', icon: <FiLayers /> },
+  ];
+
+  // For non-admin users, we still show the notifications tab in the internal list
+  const displayTabs = user?.role === 'admin' ? tabs : [
+    ...tabs.slice(0, 1),
+    { id: 'notifications', label: 'Notifications', icon: <FiBell /> },
+    ...tabs.slice(1)
   ];
 
   const handleSave = () => {
@@ -40,23 +56,25 @@ const SettingsPage = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Navigation */}
-        <div className="w-full md:w-64 space-y-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all ${
-                activeTab === tab.id
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-primary/5 hover:text-primary'
-              }`}
-            >
-              <span className="text-lg">{tab.icon}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Sidebar Navigation - Hidden for Admin as it's in the main sidebar */}
+        {user?.role !== 'admin' && (
+          <div className="w-full md:w-64 space-y-1">
+            {displayTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-bold uppercase tracking-wider rounded-xl transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-primary/5 hover:text-primary'
+                }`}
+              >
+                <span className="text-lg">{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Content Area */}
         <div className="flex-1">

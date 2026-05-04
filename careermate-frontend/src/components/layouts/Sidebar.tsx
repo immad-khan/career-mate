@@ -22,6 +22,8 @@ import {
   FiCreditCard,
   FiLogOut,
   FiActivity,
+  FiLock,
+  FiLayers,
 } from "react-icons/fi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
@@ -137,16 +139,34 @@ const navItems: NavItem[] = [
     roles: ["admin"],
   },
   {
+    label: "Profile Information",
+    href: "/dashboard/settings?tab=profile",
+    icon: <FiUser className="w-5 h-5" />,
+    roles: ["admin"],
+  },
+  {
+    label: "Security & Privacy",
+    href: "/dashboard/settings?tab=security",
+    icon: <FiLock className="w-5 h-5" />,
+    roles: ["admin"],
+  },
+  {
+    label: "Appearance",
+    href: "/dashboard/settings?tab=theme",
+    icon: <FiLayers className="w-5 h-5" />,
+    roles: ["admin"],
+  },
+  {
     label: "Profile",
     href: "/dashboard/profile",
     icon: <FiUser className="w-5 h-5" />,
-    roles: ["job_seeker", "hr", "admin"],
+    roles: ["job_seeker", "hr"],
   },
   {
     label: "Settings",
     href: "/dashboard/settings",
     icon: <FiSettings className="w-5 h-5" />,
-    roles: ["job_seeker", "hr", "admin"],
+    roles: ["job_seeker", "hr"],
   },
 ]
 

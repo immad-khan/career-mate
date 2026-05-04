@@ -23,76 +23,109 @@ export class RozeeCrawler extends BaseCrawler {
 
     async extractJobData() {
         try {
-            await this.page.waitForSelector('.job-listing, .job-item, [data-job-id]', { timeout: 10000 });
+            // Wait for any h3 elements (job titles) on the page
+            await this.page.waitForSelector('h3 a', { timeout: 15000 });
             
             const jobs = await this.page.evaluate(() => {
-                const jobElements = document.querySelectorAll('.job-listing, .job-item, .job-tile, .job-card');
                 const extractedJobs = [];
-
-                jobElements.forEach((jobElement) => {
+                
+                // Each job on Rozee has an h3 with a link containing the title
+                const titleLinks = document.querySelectorAll('h3 a');
+                
+                titleLinks.forEach((titleLink) => {
                     try {
-                        const titleElement = jobElement.querySelector('.job-title a, .title a, h3 a, h4 a');
-                        const companyElement = jobElement.querySelector('.company-name, .company, .employer');
-                        const locationElement = jobElement.querySelector('.location, .job-location');
-                        const salaryElement = jobElement.querySelector('.salary, .package, .compensation');
-                        const descriptionElement = jobElement.querySelector('.job-description, .description, .snippet');
-                        const linkElement = jobElement.querySelector('.job-title a, .title a, h3 a, h4 a');
-                        const dateElement = jobElement.querySelector('.date, .posted-date, .job-date');
-                        const typeElement = jobElement.querySelector('.job-type, .type');
-
-                        const job = {
-                            title: titleElement?.textContent?.trim() || '',
-                            company: companyElement?.textContent?.trim() || '',
-                            location: locationElement?.textContent?.trim() || '',
-                            salary: salaryElement?.textContent?.trim() || '',
-                            description: descriptionElement?.textContent?.trim() || '',
-                            url: linkElement?.href || '',
-                            datePosted: dateElement?.textContent?.trim() || '',
-                            jobType: typeElement?.textContent?.trim() || ''
-                        };
-
-                        if (job.title && job.company) {
-                            extractedJobs.push(job);
+                        const title = titleLink.textContent?.trim() || '';
+                        let jobUrl = titleLink.href || '';
+                        
+                        // Skip non-job links
+                        if (!title || title.length < 3) return;
+                        if (jobUrl && !jobUrl.includes('/job/') && !jobUrl.includes('rozee.pk')) return;
+                        
+                        // Fix protocol-relative URLs
+                        if (jobUrl.startsWith('//')) jobUrl = 'https:' + jobUrl;
+                        
+                        // Walk up to find the job card container
+                        let jobCard = titleLink.parentElement;
+                        for (let i = 0; i < 6 && jobCard; i++) {
+                            if (jobCard.querySelectorAll('a').length >= 2) break;
+                            jobCard = jobCard.parentElement;
                         }
+                        
+                        if (!jobCard) return;
+                        
+                        // Get company and location from inline links
+                        const allLinks = jobCard.querySelectorAll('a');
+                        let company = '';
+                        let location = '';
+                        
+                        allLinks.forEach(link => {
+                            const text = link.textContent?.trim() || '';
+                            const href = link.href || '';
+                            if (href.includes('/company/') || href.includes('/employer/')) {
+                                company = text;
+                            }
+                            if (href.includes('/city/') || href.includes('/location/') || 
+                                text.includes('Karachi') || text.includes('Lahore') || 
+                                text.includes('Islamabad') || text.includes('Rawalpindi') ||
+                                text.includes('Faisalabad') || text.includes('Peshawar') ||
+                                text.includes('Remote') || text.includes('Pakistan')) {
+                                if (!location) location = text;
+                            }
+                        });
+                        
+                        // Look for salary in the card
+                        let salary = '';
+                        const allText = jobCard.innerText || '';
+                        const salaryMatch = allText.match(/(?:PKR|Rs\.?)\s*[\d,]+\s*(?:-|to)\s*(?:PKR|Rs\.?)?\s*[\d,]+/i) ||
+                                          allText.match(/[\d,]+K?\s*-\s*[\d,]+K?/);
+                        if (salaryMatch) salary = salaryMatch[0].trim();
+                        
+                        extractedJobs.push({
+                            title,
+                            company: company || 'See listing',
+                            location: location || 'Pakistan',
+                            salary: salary || 'Not specified',
+                            description: `${title}${company ? ' at ' + company : ''}. ${location ? 'Location: ' + location : ''}`,
+                            url: jobUrl,
+                            datePosted: ''
+                        });
                     } catch (error) {
-                        console.error('Error extracting job data:', error);
+                        console.error('Error extracting job:', error);
                     }
                 });
 
                 return extractedJobs;
             });
 
+            this.logger.info(`Primary extraction found ${jobs.length} jobs`);
             return jobs.map(job => this.normalizeJobData(job));
         } catch (error) {
             this.logger.error(`Error extracting job data: ${error.message}`);
             
+            // Fallback: try broader extraction
             try {
                 const alternativeJobs = await this.page.evaluate(() => {
-                    const jobElements = document.querySelectorAll('div[class*="job"], div[class*="listing"], tr[class*="job"]');
                     const extractedJobs = [];
-
-                    jobElements.forEach((jobElement) => {
-                        try {
-                            const links = jobElement.querySelectorAll('a');
-                            const texts = Array.from(jobElement.querySelectorAll('*')).map(el => el.textContent?.trim()).filter(Boolean);
-                            
-                            if (texts.length > 2) {
-                                const job = {
-                                    title: texts[0] || '',
-                                    company: texts[1] || '',
-                                    location: texts.find(t => t.includes('Karachi') || t.includes('Lahore') || t.includes('Islamabad')) || '',
-                                    salary: texts.find(t => t.includes('Rs') || t.includes('PKR') || t.includes('salary')) || '',
-                                    description: texts.slice(2).join(' ').substring(0, 200) + '...' || '',
-                                    url: links[0]?.href || '',
-                                    datePosted: texts.find(t => t.includes('ago') || t.includes('day') || t.includes('hour')) || ''
-                                };
-
-                                if (job.title.length > 5 && job.company.length > 2) {
-                                    extractedJobs.push(job);
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error in alternative extraction:', error);
+                    const h3s = document.querySelectorAll('h3');
+                    
+                    h3s.forEach(h3 => {
+                        const link = h3.querySelector('a');
+                        if (!link || !link.href) return;
+                        
+                        const title = link.textContent?.trim() || '';
+                        let url = link.href || '';
+                        if (url.startsWith('//')) url = 'https:' + url;
+                        
+                        if (title.length > 5) {
+                            extractedJobs.push({
+                                title,
+                                company: 'See listing on Rozee.pk',
+                                location: 'Pakistan',
+                                salary: 'Not specified',
+                                description: title,
+                                url,
+                                datePosted: ''
+                            });
                         }
                     });
 
