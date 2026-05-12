@@ -9,8 +9,8 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { FiMail, FiLock, FiUser, FiEye, FiEyeOff, FiBriefcase, FiUpload, FiCalendar } from 'react-icons/fi';
 
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Input from '@/components/ui/input';
+import Button from '@/components/ui/button';
 import { authAPI } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
 

@@ -7,8 +7,8 @@ import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { jobsAPI } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Input from '@/components/ui/input';
+import Button from '@/components/ui/button';
 
 const jobSchema = z.object({
   title: z.string().min(1, 'Job Title is required'),

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { useAuthStore } from "@/store/authStore"
 import { getInitials } from "@/lib/utils"
-import Badge from "@/components/ui/Badge"
+import Badge from "@/components/ui/badge"
 import { FiMenu, FiSearch, FiBell, FiChevronDown, FiUser, FiSettings, FiLogOut, FiCreditCard } from "react-icons/fi"
 
 interface NavbarProps {

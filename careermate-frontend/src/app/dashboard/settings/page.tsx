@@ -13,9 +13,9 @@ import {
   FiCheckCircle, 
   FiSave 
 } from 'react-icons/fi';
-import Card, { CardBody, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import Card, { CardBody, CardHeader } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import Input from '@/components/ui/input';
 import toast from 'react-hot-toast';
 
 const SettingsPage = () => {

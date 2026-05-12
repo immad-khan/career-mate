@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/authStore"
 import BeautifulAuthLayout from "@/components/beautiful-auth-layout"
 import { FiClock, FiShield,  FiLogOut } from "react-icons/fi"
 import registerPic from "@/register.jpg"
-import Button from "@/components/ui/Button"
+import Button from "@/components/ui/button"
 
 export default function PendingApprovalPage() {
   const { user, hrApprovalStatus, logout } = useAuthStore()

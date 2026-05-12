@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { roadmapAPI } from "@/lib/api"
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
+import Button from "@/components/ui/button"
+import Input from "@/components/ui/input"
 
 interface Skill {
   id: string

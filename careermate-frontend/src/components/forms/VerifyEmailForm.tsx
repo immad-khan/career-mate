@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { FiMail, FiRefreshCw } from 'react-icons/fi';
 
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/button';
 import { authAPI } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';

@@ -5,7 +5,7 @@ import { FiTrendingUp, FiArrowRight, FiRefreshCw, FiAlertCircle, FiActivity, FiG
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { marketTrendsAPI } from "@/lib/api"
-import Button from "@/components/ui/Button"
+import Button from "@/components/ui/button"
 
 interface MarketTrendData {
   field: string

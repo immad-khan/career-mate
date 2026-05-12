@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { jobsAPI } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
-import Spinner from '@/components/ui/Spinner';
-import Button from '@/components/ui/Button';
+import Spinner from '@/components/ui/spinner';
+import Button from '@/components/ui/button';
 
 export default function ManageJobs() {
   const [jobs, setJobs] = useState<any[]>([]);

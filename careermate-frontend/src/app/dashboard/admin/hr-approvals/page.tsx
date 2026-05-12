@@ -7,11 +7,11 @@ import { adminAPI } from '@/lib/api';
 import { HRProfile, DESIGNATION_OPTIONS } from '@/types';
 import { getErrorMessage, formatDate, getInitials } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import Card, { CardBody, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import Modal from '@/components/ui/Modal';
-import Spinner from '@/components/ui/Spinner';
+import Card, { CardBody, CardHeader } from '@/components/ui/card';
+import Button from '@/components/ui/button';
+import Badge from '@/components/ui/badge';
+import Modal from '@/components/ui/modal';
+import Spinner from '@/components/ui/spinner';
 import {
   FiCheck,
   FiX,

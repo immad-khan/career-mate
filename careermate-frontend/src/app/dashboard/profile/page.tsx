@@ -26,8 +26,8 @@ import {
   FiTarget,
 } from 'react-icons/fi';
 import { Skill, PortfolioItem, EducationEntry, UserLanguage } from '@/types';
-import Spinner from '@/components/ui/Spinner';
-import Badge from '@/components/ui/Badge';
+import Spinner from '@/components/ui/spinner';
+import Badge from '@/components/ui/badge';
 
 export default function ProfilePage() {
   const { user, profile, refreshUser, hrApprovalStatus } = useAuthStore();

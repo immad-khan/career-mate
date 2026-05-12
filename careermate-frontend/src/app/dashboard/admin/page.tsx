@@ -7,11 +7,11 @@ import { adminAPI } from '@/lib/api';
 import { PlatformStats } from '@/types';
 import { getErrorMessage } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import Card, { CardBody, CardHeader } from '@/components/ui/Card';
-import StatsCard from '@/components/ui/StatsCard';
-import Button from '@/components/ui/Button';
-import Spinner from '@/components/ui/Spinner';
-import Badge from '@/components/ui/Badge';
+import Card, { CardBody, CardHeader } from '@/components/ui/card';
+import StatsCard from '@/components/ui/stats-card';
+import Button from '@/components/ui/button';
+import Spinner from '@/components/ui/spinner';
+import Badge from '@/components/ui/badge';
 import {
   FiUsers,
   FiUserCheck,

@@ -8,8 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { FiLock, FiEye, FiEyeOff, FiCheck } from 'react-icons/fi';
 
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Input from '@/components/ui/input';
+import Button from '@/components/ui/button';
 import { authAPI } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils';
 
