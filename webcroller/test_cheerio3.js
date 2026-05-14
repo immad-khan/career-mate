@@ -1,0 +1,1 @@
+import fs from "fs"; import * as cheerio from "cheerio"; const html = fs.readFileSync("rozee_test_pptr.html", "utf8"); const $ = cheerio.load(html); $(".job").eq(5).each((i, el) => { console.log($(el).html()); });

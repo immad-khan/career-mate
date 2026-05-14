@@ -1,0 +1,1 @@
+const fs = require('fs'); const cheerio = require('cheerio'); const html = fs.readFileSync('rozee_test.html', 'utf8'); const $ = cheerio.load(html); console.log(h3.length, .job.length, .jobm.length); div.each((i, e) => { if(.attr('class') && .attr('class').includes('job')) console.log(.attr('class')); });

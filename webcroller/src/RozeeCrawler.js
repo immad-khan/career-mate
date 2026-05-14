@@ -23,8 +23,8 @@ export class RozeeCrawler extends BaseCrawler {
 
     async extractJobData() {
         try {
-            // Wait for any h3 elements (job titles) on the page
-            await this.page.waitForSelector('h3 a', { timeout: 15000 });
+            // Wait for any h3 elements or .job elements (job titles) on the page
+            await this.page.waitForSelector('h3 a, div.job', { timeout: 15000 }).catch(e => this.logger.warn("Selector wait timeout, trying anyway"));
             
             const jobs = await this.page.evaluate(() => {
                 const extractedJobs = [];
@@ -54,31 +54,35 @@ export class RozeeCrawler extends BaseCrawler {
                         if (!jobCard) return;
                         
                         // Get company and location from inline links
-                        const allLinks = jobCard.querySelectorAll('a');
+                        const cnameDiv = jobCard.querySelector('.cname');
                         let company = '';
                         let location = '';
-                        
-                        allLinks.forEach(link => {
-                            const text = link.textContent?.trim() || '';
-                            const href = link.href || '';
-                            if (href.includes('/company/') || href.includes('/employer/')) {
-                                company = text;
+                        if (cnameDiv) {
+                            const links = cnameDiv.querySelectorAll('a');
+                            if (links.length > 0) {
+                                company = links[0].textContent.replace(/,\s*$/, '').trim();
                             }
-                            if (href.includes('/city/') || href.includes('/location/') || 
-                                text.includes('Karachi') || text.includes('Lahore') || 
-                                text.includes('Islamabad') || text.includes('Rawalpindi') ||
-                                text.includes('Faisalabad') || text.includes('Peshawar') ||
-                                text.includes('Remote') || text.includes('Pakistan')) {
-                                if (!location) location = text;
+                            if (links.length > 1) {
+                                let locStr = '';
+                                for (let j=1; j<links.length; j++) {
+                                    locStr += links[j].textContent.trim();
+                                }
+                                location = locStr.replace(/^[,\s]+/, '').trim();
                             }
-                        });
+                        }
                         
                         // Look for salary in the card
                         let salary = '';
-                        const allText = jobCard.innerText || '';
-                        const salaryMatch = allText.match(/(?:PKR|Rs\.?)\s*[\d,]+\s*(?:-|to)\s*(?:PKR|Rs\.?)?\s*[\d,]+/i) ||
-                                          allText.match(/[\d,]+K?\s*-\s*[\d,]+K?/);
-                        if (salaryMatch) salary = salaryMatch[0].trim();
+                        const salSpan = jobCard.querySelector('.rz-salary');
+                        if (salSpan && salSpan.nextElementSibling) {
+                            salary = salSpan.nextElementSibling.textContent.trim();
+                        } else {
+                            // Fallback
+                            const allText = jobCard.innerText || '';
+                            const salaryMatch = allText.match(/(?:PKR|Rs\.?)\s*[\d,]+\s*(?:-|to)\s*(?:PKR|Rs\.?)?\s*[\d,]+/i) ||
+                                              allText.match(/[\d,]+K?\s*-\s*[\d,]+K?/);
+                            if (salaryMatch) salary = salaryMatch[0].trim();
+                        }
                         
                         extractedJobs.push({
                             title,
