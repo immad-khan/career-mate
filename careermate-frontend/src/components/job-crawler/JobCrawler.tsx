@@ -77,44 +77,51 @@ export default function JobCrawler() {
     setLoading(true)
     setHasSearched(true)
     setSelectedJob(null)
-    try {
-      const cacheKey = `careermate_job_search_${term.toLowerCase()}`
+    
+    const cacheKey = `careermate_job_search_${term.toLowerCase()}`
+    
+    const checkAndLoadCache = () => {
       const cached = localStorage.getItem(cacheKey)
-      
       if (cached) {
         const { timestamp, data } = JSON.parse(cached)
         const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
-        
-        if (Date.now() - timestamp < TWENTY_FOUR_HOURS) {
+        if (Date.now() - timestamp < TWENTY_FOUR_HOURS && data?.length > 0) {
           setJobs(data)
-          if (data.length === 0) {
-            toast.error("No jobs match your search in the cached results.");
-          } else {
-            toast.success("Loaded job results from cache!");
-          }
-          setLoading(false)
-          return
+          return true
         }
       }
+      return false
+    }
 
+    try {
       const response = await jobCrawlerAPI.searchJobs(term)
-      if (response.success) {
+      if (response.success && response.data && response.data.length > 0) {
         setJobs(response.data)
         
-        // Cache the response
+        // Cache the successful non-empty response
         localStorage.setItem(cacheKey, JSON.stringify({
           timestamp: Date.now(),
           data: response.data
         }))
-        
-        if (response.data.length === 0) {
-          toast.error("No jobs match your search. Try different keywords or filters")
-        }
       } else {
-        toast.error(response.message || "Failed to search jobs")
+        // Fallback to cache if nothing comes back or scraper fails
+        const loadedFromCache = checkAndLoadCache()
+        if (!loadedFromCache) {
+          setJobs([])
+          if (response.success) {
+            toast.error("No jobs match your search. Try different keywords or filters")
+          } else {
+            toast.error(response.message || "Failed to search jobs")
+          }
+        }
       }
     } catch (error: any) {
-      toast.error("Error occurred while searching for jobs")
+      // Fallback to cache on network errors (e.g. ERR_CONNECTION_RESET)
+      const loadedFromCache = checkAndLoadCache()
+      if (!loadedFromCache) {
+        setJobs([])
+        toast.error("Error occurred while searching for jobs")
+      }
     } finally {
       setLoading(false)
     }
