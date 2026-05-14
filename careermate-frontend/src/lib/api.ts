@@ -83,14 +83,6 @@ export const authAPI = {
     const response = await api.get('/auth/me/');
     return response.data;
   },
-  updateJobSeekerProfile: async (data: any) => {
-    const response = await api.put('/profile/job-seeker/', data);
-    return response.data;
-  },
-  updateHRProfile: async (data: any) => {
-    const response = await api.put('/profile/hr/', data);
-    return response.data;
-  },
   refreshToken: async (refreshToken: string) => {
     const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
       refresh: refreshToken,
@@ -103,6 +95,42 @@ export const authAPI = {
   },
   resendOTP: async (email: string) => {
     const response = await api.post('/auth/resend-otp/', { email });
+    return response.data;
+  },
+};
+
+// Profile API
+export const profileAPI = {
+  updateJobSeekerProfile: async (data: any) => {
+    const response = await api.put('/profile/job-seeker/', data);
+    return response.data;
+  },
+  updateHRProfile: async (data: any) => {
+    const response = await api.put('/profile/hr/', data);
+    return response.data;
+  },
+  addSkill: async (data: any) => {
+    const response = await api.post('/profile/skills/', data);
+    return response.data;
+  },
+  deleteSkill: async (id: number) => {
+    const response = await api.delete(`/profile/skills/${id}/`);
+    return response.data;
+  },
+  addPortfolioItem: async (data: any) => {
+    const response = await api.post('/profile/portfolio/', data);
+    return response.data;
+  },
+  deletePortfolioItem: async (id: number) => {
+    const response = await api.delete(`/profile/portfolio/${id}/`);
+    return response.data;
+  },
+  addEducation: async (data: any) => {
+    const response = await api.post('/profile/education/', data);
+    return response.data;
+  },
+  addLanguage: async (data: any) => {
+    const response = await api.post('/profile/languages/', data);
     return response.data;
   },
 };
