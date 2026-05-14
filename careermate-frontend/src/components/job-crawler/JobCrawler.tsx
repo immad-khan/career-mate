@@ -78,9 +78,35 @@ export default function JobCrawler() {
     setHasSearched(true)
     setSelectedJob(null)
     try {
+      const cacheKey = `careermate_job_search_${term.toLowerCase()}`
+      const cached = localStorage.getItem(cacheKey)
+      
+      if (cached) {
+        const { timestamp, data } = JSON.parse(cached)
+        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+        
+        if (Date.now() - timestamp < TWENTY_FOUR_HOURS) {
+          setJobs(data)
+          if (data.length === 0) {
+            toast.error("No jobs match your search in the cached results.");
+          } else {
+            toast.success("Loaded job results from cache!");
+          }
+          setLoading(false)
+          return
+        }
+      }
+
       const response = await jobCrawlerAPI.searchJobs(term)
       if (response.success) {
         setJobs(response.data)
+        
+        // Cache the response
+        localStorage.setItem(cacheKey, JSON.stringify({
+          timestamp: Date.now(),
+          data: response.data
+        }))
+        
         if (response.data.length === 0) {
           toast.error("No jobs match your search. Try different keywords or filters")
         }
