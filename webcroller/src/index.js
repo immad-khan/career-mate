@@ -17,7 +17,7 @@ async function main() {
         const searchParams = {
             keyword: process.argv[2] || 'software engineer',
             location: process.argv[3] || 'Pakistan',
-            sources: ['indeed', 'rozee'], 
+            sources: ['bayt', 'brightspyre', 'rozee'], 
             maxPages: 3,
             filters: {},
             sortBy: 'datePosted'
@@ -53,6 +53,4 @@ async function main() {
     }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-    main();
-}
+main();

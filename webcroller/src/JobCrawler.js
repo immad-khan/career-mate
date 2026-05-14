@@ -1,6 +1,8 @@
 import { IndeedCrawler } from './IndeedCrawler.js';
 import { RozeeCrawler } from './RozeeCrawler.js';
 import { LinkedInCrawler } from './LinkedInCrawler.js';
+import { BaytCrawler } from './BaytCrawler.js';
+import { BrightspyreCrawler } from './BrightspyreCrawler.js';
 import { JobDataProcessor } from './JobDataProcessor.js';
 import winston from 'winston';
 import fs from 'fs-extra';
@@ -18,7 +20,9 @@ export class JobCrawler {
         this.crawlers = {
             indeed: new IndeedCrawler(this.options),
             rozee: new RozeeCrawler(this.options),
-            linkedin: new LinkedInCrawler(this.options)
+            linkedin: new LinkedInCrawler(this.options),
+            bayt: new BaytCrawler(this.options),
+            brightspyre: new BrightspyreCrawler(this.options)
         };
 
         this.processor = new JobDataProcessor();

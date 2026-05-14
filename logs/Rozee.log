@@ -1,0 +1,9 @@
+2026-05-14T06:50:58.278Z [Rozee] info: Initializing browser...
+2026-05-14T06:51:00.867Z [Rozee] info: Browser initialized successfully
+2026-05-14T06:51:00.869Z [Rozee] info: Starting Rozee crawl with params: {"keyword":"engineer","location":"Pakistan","maxPages":1}
+2026-05-14T06:51:00.871Z [Rozee] info: Navigating to: https://www.rozee.pk/job/jsearch/q/engineer
+2026-05-14T06:51:31.137Z [Rozee] warn: Selector wait timeout, trying anyway
+2026-05-14T06:51:31.262Z [Rozee] info: Primary extraction found 0 jobs
+2026-05-14T06:51:31.263Z [Rozee] info: No more jobs found, stopping crawl
+2026-05-14T06:51:31.263Z [Rozee] info: Crawl completed. Total jobs found: 0
+2026-05-14T06:51:31.868Z [Rozee] info: Browser closed successfully

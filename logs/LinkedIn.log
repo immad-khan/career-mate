@@ -1,0 +1,5 @@
+2026-05-14T06:50:58.265Z [LinkedIn] warn: LinkedIn Crawler Limitations:
+2026-05-14T06:50:58.269Z [LinkedIn] warn: - LinkedIn has strict anti-bot measures
+2026-05-14T06:50:58.270Z [LinkedIn] warn: - May require authentication for full access
+2026-05-14T06:50:58.271Z [LinkedIn] warn: - Rate limiting is enforced
+2026-05-14T06:50:58.271Z [LinkedIn] warn: - Consider using LinkedIn API for production use

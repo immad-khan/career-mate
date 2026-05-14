@@ -36,7 +36,9 @@ app.get('/supported-sources', (req, res) => {
         sources: [
             { name: 'indeed', displayName: 'Indeed Pakistan', url: 'https://pk.indeed.com' },
             { name: 'rozee', displayName: 'Rozee.pk', url: 'https://www.rozee.pk' },
-            { name: 'linkedin', displayName: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs' }
+            { name: 'linkedin', displayName: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs' },
+            { name: 'bayt', displayName: 'Bayt.com', url: 'https://www.bayt.com/en/pakistan/jobs' },
+            { name: 'brightspyre', displayName: 'Brightspyre', url: 'https://resume.brightspyre.com/jobs' }
         ]
     });
 });
@@ -46,7 +48,7 @@ app.post('/search-jobs', async (req, res) => {
     try {
         console.log('📥 Received job search request');
 
-        const { query, location, maxResults = 30, sources = ['indeed', 'rozee'] } = req.body;
+        const { query, location, maxResults = 30, sources = ['bayt', 'brightspyre', 'rozee'] } = req.body;
 
         // Validate input
         if (!query || !location) {
@@ -78,7 +80,7 @@ app.post('/search-jobs', async (req, res) => {
         const searchParams = {
             keyword: query,
             location: location,
-            sources: Array.isArray(sources) ? sources : ['indeed', 'rozee'],
+            sources: Array.isArray(sources) ? sources : ['bayt', 'brightspyre', 'rozee'],
             maxPages: 2,
             filters: {},
             sortBy: 'datePosted',

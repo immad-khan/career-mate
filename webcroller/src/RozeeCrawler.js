@@ -29,8 +29,8 @@ export class RozeeCrawler extends BaseCrawler {
             const jobs = await this.page.evaluate(() => {
                 const extractedJobs = [];
                 
-                // Each job on Rozee has an h3 with a link containing the title
-                const titleLinks = document.querySelectorAll('h3 a');
+                // Each job on Rozee has an h3 or other title container
+                const titleLinks = document.querySelectorAll('h3 a, .job-title a, .job-name a, .job-listing h3 a, .card-title a');
                 
                 titleLinks.forEach((titleLink) => {
                     try {

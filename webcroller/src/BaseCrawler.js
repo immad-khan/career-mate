@@ -9,16 +9,16 @@ export class BaseCrawler {
         this.options = {
             headless: true,
             slowMo: 100,
-            timeout: 30000,
+            timeout: 50000,
             maxRetries: 3,
             delay: 2000,
             ...options
         };
-        
+
         this.browser = null;
         this.page = null;
         this.jobs = [];
-        
+
         this.logger = winston.createLogger({
             level: 'info',
             format: winston.format.combine(
@@ -56,15 +56,15 @@ export class BaseCrawler {
             });
 
             this.page = await this.browser.newPage();
-            
+
             const userAgent = new UserAgent();
             await this.page.setUserAgent(userAgent.toString());
-            
+
             await this.page.setViewport({ width: 1366, height: 768 });
-            
+
             await this.page.setRequestInterception(true);
             this.page.on('request', (req) => {
-                if (req.resourceType() === 'stylesheet' || 
+                if (req.resourceType() === 'stylesheet' ||
                     req.resourceType() === 'image' ||
                     req.resourceType() === 'font') {
                     req.abort();
@@ -81,14 +81,14 @@ export class BaseCrawler {
         }
     }
 
-    async navigateToPage(url, retries = 0) {
+    async navigateToPage(url, retries = 2) {
         try {
             this.logger.info(`Navigating to: ${url}`);
             await this.page.goto(url, {
                 waitUntil: 'domcontentloaded',
                 timeout: this.options.timeout
             });
-            
+
             await this.randomDelay();
             return true;
         } catch (error) {
