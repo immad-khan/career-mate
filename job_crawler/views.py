@@ -57,7 +57,15 @@ class JobSearchView(APIView):
 
         # Load local jobs using jobs app
         from jobs.models import Job
-        local_jobs_qs = Job.objects.filter(status='active', title__icontains=keyword)
+        from django.db.models import Q
+        
+        words = keyword.split()
+        q_objects = Q()
+        for word in words:
+            q_objects |= Q(title__icontains=word)
+            
+        local_jobs_qs = Job.objects.filter(Q(status='active') & q_objects).distinct()
+        
         local_jobs = []
         for j in local_jobs_qs:
             local_jobs.append({
