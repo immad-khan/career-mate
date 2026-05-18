@@ -21,7 +21,7 @@ class RealtimeJobCrawler {
     }
 
     async initialize() {
-        console.log('🚀 Initializing Real-time Job Crawler...');
+        console.log('Initializing Real-time Job Crawler...');
 
         try {
             if (this.browser) await this.browser.close();

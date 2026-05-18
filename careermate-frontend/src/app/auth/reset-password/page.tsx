@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
-import Spinner from '@/components/ui/spinner';
+import Spinner from '@/components/ui/Spinner';
 
 export default function ResetPasswordPage() {
   return (

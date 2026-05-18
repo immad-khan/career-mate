@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { jobCrawlerAPI, jobsAPI } from "@/lib/api"
 import Button from "@/components/ui/button"
-import Spinner from "@/components/ui/spinner"
+import Spinner from "@/components/ui/Spinner"
 
 interface Job {
   id: string
@@ -83,16 +83,34 @@ export default function JobCrawler() {
     const checkAndLoadCache = () => {
       const cached = localStorage.getItem(cacheKey)
       if (cached) {
-        const { timestamp, data } = JSON.parse(cached)
-        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
-        if (Date.now() - timestamp < TWENTY_FOUR_HOURS && data?.length > 0) {
-          setJobs(data)
-          return true
+        try {
+          const { timestamp, data } = JSON.parse(cached)
+          const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+          if (Date.now() - timestamp < TWENTY_FOUR_HOURS && data?.length > 0) {
+            setJobs(data)
+            setHasSearched(true)
+            return true
+          }
+        } catch (e) {
+          console.error("Cache parsing failed", e)
         }
       }
       return false
     }
 
+    // NEW: Check cache FIRST for instant results across accounts
+    const cacheLoaded = checkAndLoadCache()
+    if (cacheLoaded) {
+      // If loaded from cache, we don't show the full-page loader
+      // but we still fetch in the background to get latest jobs
+      setLoading(false) 
+    } else {
+      setLoading(true)
+      setHasSearched(true)
+    }
+
+    setSelectedJob(null)
+    
     try {
       const response = await jobCrawlerAPI.searchJobs(term)
       if (response.success && response.data && response.data.length > 0) {
@@ -103,24 +121,23 @@ export default function JobCrawler() {
           timestamp: Date.now(),
           data: response.data
         }))
-      } else {
-        // Fallback to cache if nothing comes back or scraper fails
-        const loadedFromCache = checkAndLoadCache()
-        if (!loadedFromCache) {
-          setJobs([])
-          if (response.success) {
-            toast.error("No jobs match your search. Try different keywords or filters")
-          } else {
-            toast.error(response.message || "Failed to search jobs")
-          }
+      } else if (!cacheLoaded) {
+        // Only show error/fallback if we didn't already load from cache
+        setJobs([])
+        if (response.success) {
+          toast.error("No jobs match your search. Try different keywords or filters")
+        } else {
+          toast.error(response.message || "Failed to search jobs")
         }
       }
     } catch (error: any) {
-      // Fallback to cache on network errors (e.g. ERR_CONNECTION_RESET)
-      const loadedFromCache = checkAndLoadCache()
-      if (!loadedFromCache) {
-        setJobs([])
-        toast.error("Error occurred while searching for jobs")
+      // Fallback to cache on network errors if not already loaded
+      if (!cacheLoaded) {
+        const fallbackLoaded = checkAndLoadCache()
+        if (!fallbackLoaded) {
+          setJobs([])
+          toast.error("Error occurred while searching for jobs")
+        }
       }
     } finally {
       setLoading(false)

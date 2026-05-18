@@ -11,7 +11,7 @@ import Card, { CardBody, CardHeader } from '@/components/ui/card';
 import Button from '@/components/ui/button';
 import Badge from '@/components/ui/badge';
 import Modal from '@/components/ui/modal';
-import Spinner from '@/components/ui/spinner';
+import Spinner from '@/components/ui/Spinner';
 import {
   FiCheck,
   FiX,

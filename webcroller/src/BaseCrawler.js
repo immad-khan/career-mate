@@ -62,16 +62,18 @@ export class BaseCrawler {
 
             await this.page.setViewport({ width: 1366, height: 768 });
 
-            await this.page.setRequestInterception(true);
-            this.page.on('request', (req) => {
-                if (req.resourceType() === 'stylesheet' ||
-                    req.resourceType() === 'image' ||
-                    req.resourceType() === 'font') {
-                    req.abort();
-                } else {
-                    req.continue();
-                }
-            });
+            if (!this.options.disableInterception) {
+                await this.page.setRequestInterception(true);
+                this.page.on('request', (req) => {
+                    if (req.resourceType() === 'stylesheet' ||
+                        req.resourceType() === 'image' ||
+                        req.resourceType() === 'font') {
+                        req.abort();
+                    } else {
+                        req.continue();
+                    }
+                });
+            }
 
             this.logger.info('Browser initialized successfully');
             return true;
@@ -85,7 +87,7 @@ export class BaseCrawler {
         try {
             this.logger.info(`Navigating to: ${url}`);
             await this.page.goto(url, {
-                waitUntil: 'domcontentloaded',
+                waitUntil: this.options.waitUntil || 'networkidle2',
                 timeout: this.options.timeout
             });
 
