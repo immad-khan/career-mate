@@ -35,7 +35,24 @@ jobs:
           DB_HOST: 'placeholder'
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip . --exclude "*.git*" --exclude "node_modules/*"
+        run: |
+          zip -r release.zip . \
+            --exclude "*.git*" \
+            --exclude "node_modules/*" \
+            --exclude "careermate-frontend/*" \
+            --exclude "__pycache__/*" \
+            --exclude "*.pyc"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-app
+          path: release.zip
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: django-app
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
