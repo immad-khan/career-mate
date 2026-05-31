@@ -29,9 +29,17 @@ jobs:
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: 'False'
+          DB_NAME: 'placeholder'
+          DB_USER: 'placeholder'
+          DB_PASSWORD: 'placeholder'
+          DB_HOST: 'placeholder'
+
+      - name: Zip artifact for deployment
+        run: zip -r release.zip . --exclude "*.git*" --exclude "node_modules/*"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'careermate-api'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip
