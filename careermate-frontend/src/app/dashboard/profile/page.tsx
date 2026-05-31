@@ -26,7 +26,7 @@ import {
   FiTarget,
 } from 'react-icons/fi';
 import { Skill, PortfolioItem, EducationEntry, UserLanguage } from '@/types';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/spinner';
 import Badge from '@/components/ui/badge';
 
 export default function ProfilePage() {

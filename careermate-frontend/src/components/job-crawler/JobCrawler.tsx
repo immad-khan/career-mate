@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { jobCrawlerAPI, jobsAPI } from "@/lib/api"
 import Button from "@/components/ui/button"
-import Spinner from "@/components/ui/Spinner"
+import Spinner from "@/components/ui/spinner"
 
 interface Job {
   id: string

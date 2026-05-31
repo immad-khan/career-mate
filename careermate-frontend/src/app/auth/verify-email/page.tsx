@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import BeautifulAuthLayout from '@/components/beautiful-auth-layout';
 import VerifyEmailForm from '@/components/forms/VerifyEmailForm';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/spinner';
 import registerPic from "@/register.jpg"
 
 export default function VerifyEmailPage() {

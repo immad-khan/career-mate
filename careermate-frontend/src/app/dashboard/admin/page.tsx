@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import Card, { CardBody, CardHeader } from '@/components/ui/card';
 import StatsCard from '@/components/ui/stats-card';
 import Button from '@/components/ui/button';
-import Spinner from '@/components/ui/Spinner';
+import Spinner from '@/components/ui/spinner';
 import Badge from '@/components/ui/badge';
 import {
   FiUsers,
