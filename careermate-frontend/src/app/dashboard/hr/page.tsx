@@ -3,12 +3,11 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import PostJobForm from '@/components/forms/PostJobForm';
-import ManageJobs from '@/components/dashboard/hr/ManageJobs';
 import ApplicantsList from '@/components/dashboard/hr/ApplicantsList';
 
 export default function HRDashboard() {
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'post-job' | 'manage-jobs' | 'applicants'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'post-job' | 'applicants'>('dashboard');
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -17,7 +16,7 @@ export default function HRDashboard() {
       </div>
 
       <div className="flex space-x-4 border-b border-gray-200 mb-6 px-2">
-        {['dashboard', 'post-job', 'manage-jobs', 'applicants'].map((tab) => (
+        {['dashboard', 'post-job', 'applicants'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -41,7 +40,6 @@ export default function HRDashboard() {
         )}
         
         {activeTab === 'post-job' && <PostJobForm />}
-        {activeTab === 'manage-jobs' && <ManageJobs />}
         {activeTab === 'applicants' && <ApplicantsList />}
       </div>
     </div>
