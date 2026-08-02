@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FiSearch, FiMapPin, FiBriefcase, FiClock, FiDollarSign, FiExternalLink, FiHeart, FiCheck, FiArrowLeft, FiAlertCircle, FiChevronRight, FiFilter, FiTrendingUp, FiGlobe } from "react-icons/fi"
+import { FiSearch, FiMapPin, FiBriefcase, FiClock, FiDollarSign, FiExternalLink, FiHeart, FiCheck, FiArrowLeft, FiAlertCircle, FiChevronRight, FiFilter, FiTrendingUp, FiGlobe, FiUpload } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { jobCrawlerAPI, jobsAPI } from "@/lib/api"
+import { useFavouriteJobsStore } from "@/store/favouriteJobsStore"
 import Button from "@/components/ui/button"
 import Spinner from "@/components/ui/spinner"
 
@@ -22,6 +23,8 @@ interface Job {
   job_type: string
   is_local?: boolean
   local_uuid?: string
+  required_skills?: string
+  experience_level?: string
 }
 
 const FILTERS = [
@@ -43,9 +46,15 @@ export default function JobCrawler() {
   const [hasSearched, setHasSearched] = useState(false)
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set())
   const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set())
+  const [lastSearchTerm, setLastSearchTerm] = useState("")
+  const [applicationJob, setApplicationJob] = useState<Job | null>(null)
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false)
+  const { addFavourite, removeFavourite, fetchFavourites } = useFavouriteJobsStore()
 
   // Load saved and applied jobs on mount
   useEffect(() => {
+    fetchFavourites()
     const fetchUserData = async () => {
       try {
         const [savedRes, appliedRes] = await Promise.all([
@@ -68,77 +77,62 @@ export default function JobCrawler() {
   const handleSearch = async (e?: React.FormEvent, searchKeyword?: string) => {
     if (e) e.preventDefault()
     
-    const term = searchKeyword || keyword
-    if (!term.trim()) {
+    const term = (searchKeyword || keyword).trim()
+    if (!term) {
       toast.error("Please enter a keyword to search")
       return
     }
 
-    setLoading(true)
+    // Always clear current results when a new search starts
+    setJobs([])
+    setSelectedJob(null)
     setHasSearched(true)
-    setSelectedJob(null)
-    
+    setLoading(true)
+
+    // If search term changed, invalidate previous cache
+    if (lastSearchTerm && lastSearchTerm !== term.toLowerCase()) {
+      localStorage.removeItem(`careermate_job_search_${lastSearchTerm}`)
+    }
+    setLastSearchTerm(term.toLowerCase())
+
     const cacheKey = `careermate_job_search_${term.toLowerCase()}`
-    
-    const checkAndLoadCache = () => {
-      const cached = localStorage.getItem(cacheKey)
-      if (cached) {
-        try {
-          const { timestamp, data } = JSON.parse(cached)
-          const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
-          if (Date.now() - timestamp < TWENTY_FOUR_HOURS && data?.length > 0) {
-            setJobs(data)
-            setHasSearched(true)
-            return true
-          }
-        } catch (e) {
-          console.error("Cache parsing failed", e)
+
+    // Check localStorage cache (24h TTL)
+    const cachedRaw = localStorage.getItem(cacheKey)
+    if (cachedRaw) {
+      try {
+        const { timestamp, data } = JSON.parse(cachedRaw)
+        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+        if (Date.now() - timestamp < TWENTY_FOUR_HOURS && Array.isArray(data) && data.length > 0) {
+          setJobs(data)
+          setLoading(false)
+          // Still fetch fresh in background
         }
+      } catch (_) {
+        localStorage.removeItem(cacheKey)
       }
-      return false
     }
 
-    // NEW: Check cache FIRST for instant results across accounts
-    const cacheLoaded = checkAndLoadCache()
-    if (cacheLoaded) {
-      // If loaded from cache, we don't show the full-page loader
-      // but we still fetch in the background to get latest jobs
-      setLoading(false) 
-    } else {
-      setLoading(true)
-      setHasSearched(true)
-    }
-
-    setSelectedJob(null)
-    
     try {
       const response = await jobCrawlerAPI.searchJobs(term)
       if (response.success && response.data && response.data.length > 0) {
         setJobs(response.data)
-        
-        // Cache the successful non-empty response
         localStorage.setItem(cacheKey, JSON.stringify({
           timestamp: Date.now(),
           data: response.data
         }))
-      } else if (!cacheLoaded) {
-        // Only show error/fallback if we didn't already load from cache
-        setJobs([])
-        if (response.success) {
-          toast.error("No jobs match your search. Try different keywords or filters")
-        } else {
+      } else {
+        // Only blank out if cache didn't already load results
+        setJobs(prev => prev.length > 0 ? prev : [])
+        if (response.success && (!response.data || response.data.length === 0)) {
+          if (!cachedRaw) toast.error("No jobs match your search. Try different keywords or filters")
+        } else if (!response.success) {
           toast.error(response.message || "Failed to search jobs")
         }
       }
     } catch (error: any) {
-      // Fallback to cache on network errors if not already loaded
-      if (!cacheLoaded) {
-        const fallbackLoaded = checkAndLoadCache()
-        if (!fallbackLoaded) {
-          setJobs([])
-          toast.error("Error occurred while searching for jobs")
-        }
-      }
+      setJobs(prev => prev.length > 0 ? prev : [])
+      if (!cachedRaw) toast.error("Error occurred while searching for jobs")
     } finally {
       setLoading(false)
     }
@@ -152,12 +146,14 @@ export default function JobCrawler() {
           const newSet = new Set(savedJobIds)
           newSet.delete(job.id)
           setSavedJobIds(newSet)
+          removeFavourite(job.id)
           toast.success("Job removed from saved list")
         }
       } else {
         const res = await jobCrawlerAPI.saveJob(job)
         if (res.success) {
           setSavedJobIds(new Set([...Array.from(savedJobIds), job.id]))
+          addFavourite(job)
           toast.success("Job saved successfully")
         }
       }
@@ -167,18 +163,15 @@ export default function JobCrawler() {
   }
 
   const handleApplyJob = async (job: Job) => {
-    try {
-      if (job.is_local && job.local_uuid) {
-        // Apply to internal jobs
-        const formData = new FormData()
-        formData.append('job', job.local_uuid)
-        const res = await jobsAPI.applyForJob(formData)
-        
-        setAppliedJobIds(new Set([...Array.from(appliedJobIds), job.id]))
-        toast.success("Application submitted successfully to internal job")
-        return
-      }
+    if (appliedJobIds.has(job.id)) return
 
+    if (job.is_local && job.local_uuid) {
+      setApplicationJob(job)
+      setResumeFile(null)
+      return
+    }
+
+    try {
       const res = await jobCrawlerAPI.applyJob(job)
       if (res.success) {
         setAppliedJobIds(new Set([...Array.from(appliedJobIds), job.id]))
@@ -187,6 +180,40 @@ export default function JobCrawler() {
       }
     } catch (error) {
       toast.error("Failed to submit application")
+    }
+  }
+
+  const submitInternalApplication = async () => {
+    if (!applicationJob?.local_uuid || !resumeFile) {
+      toast.error('Please upload your resume before applying')
+      return
+    }
+
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg']
+    const extension = resumeFile.name.split('.').pop()?.toLowerCase()
+    if (!extension || !allowedExtensions.includes(extension)) {
+      toast.error('Upload your resume as a PDF, DOC, DOCX, PNG, or JPG file')
+      return
+    }
+    if (resumeFile.size > 5 * 1024 * 1024) {
+      toast.error('Your resume must be 5 MB or smaller')
+      return
+    }
+
+    setIsSubmittingApplication(true)
+    try {
+      const formData = new FormData()
+      formData.append('job', applicationJob.local_uuid)
+      formData.append('resume', resumeFile)
+      await jobsAPI.applyForJob(formData)
+      setAppliedJobIds(new Set([...Array.from(appliedJobIds), applicationJob.id]))
+      setApplicationJob(null)
+      setResumeFile(null)
+      toast.success('Application submitted. The employer can now review your profile and resume.')
+    } catch (error) {
+      toast.error('Failed to submit application')
+    } finally {
+      setIsSubmittingApplication(false)
     }
   }
 
@@ -414,45 +441,37 @@ export default function JobCrawler() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                    {["React", "TypeScript", "Next.js", "Tailwind CSS"].map(tag => (
-                        <span key={tag} className="px-4 py-2 bg-emerald-50 text-emerald-600 text-xs font-black uppercase rounded-xl border border-emerald-100">
-                            {tag}
-                        </span>
-                    ))}
-                </div>
+                {selectedJob.required_skills && (
+                    <div className="flex flex-wrap gap-2">
+                        {selectedJob.required_skills.split(',').map((tag: string) => tag.trim()).filter(Boolean).map((tag: string) => (
+                            <span key={tag} className="px-4 py-2 bg-emerald-50 text-emerald-600 text-xs font-black uppercase rounded-xl border border-emerald-100">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
                 <div className="prose prose-slate max-w-none">
                     <h3 className="text-xl font-black text-slate-900 mb-4">Job Description</h3>
                     <div className="text-slate-600 leading-relaxed space-y-4">
-                        <p>{selectedJob.description || "We are looking for a highly motivated individual to join our team. You will collaborate closely with other engineers and product managers to ship high-quality features."}</p>
-                        
-                        <h4 className="text-lg font-black text-slate-900 !mt-8">Responsibilities</h4>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li>Design and implement responsive user interfaces using modern frameworks.</li>
-                            <li>Collaborate with product and design to translate requirements into clean code.</li>
-                            <li>Optimize applications for maximum speed, accessibility, and scalability.</li>
-                            <li>Participate in code reviews and mentor junior engineers.</li>
-                        </ul>
-
-                        <h4 className="text-lg font-black text-slate-900 !mt-8">Requirements</h4>
-                        <ul className="list-disc pl-5 space-y-2">
-                            <li>4+ years of professional experience in development.</li>
-                            <li>Strong proficiency in modern JavaScript, CSS, and web standards.</li>
-                            <li>Experience with component libraries and design systems.</li>
-                            <li>Solid understanding of web performance and accessibility best practices.</li>
-                        </ul>
+                        {selectedJob.description ? (
+                            selectedJob.description.split('\n').filter((p: string) => p.trim()).map((paragraph: string, idx: number) => (
+                                <p key={idx}>{paragraph.trim()}</p>
+                            ))
+                        ) : (
+                            <p className="text-slate-400 italic">No description provided for this job.</p>
+                        )}
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-8 py-8 border-y border-slate-100">
                     <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Experience Level</p>
-                        <p className="text-lg font-black text-slate-900">Senior (4-7 years)</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Job Type</p>
+                        <p className="text-lg font-black text-slate-900">{selectedJob.job_type || 'Not specified'}</p>
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Published Date</p>
-                        <p className="text-lg font-black text-slate-900">{selectedJob.date_posted || '3 days ago'}</p>
+                        <p className="text-lg font-black text-slate-900">{selectedJob.date_posted || 'Not available'}</p>
                     </div>
                 </div>
               </div>
@@ -467,7 +486,9 @@ export default function JobCrawler() {
                         </div>
                         <div>
                             <h3 className="text-2xl font-black text-slate-900">{selectedJob.company}</h3>
-                            <p className="text-xs font-bold text-slate-400 mt-1">Clean energy SaaS • 200-500 employees</p>
+                            {selectedJob.experience_level && (
+                                <p className="text-xs font-bold text-slate-400 mt-1">{selectedJob.experience_level}</p>
+                            )}
                         </div>
 
                         <div className="w-full space-y-4 pt-6">
@@ -498,7 +519,7 @@ export default function JobCrawler() {
                         </div>
 
                         <div className="pt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Posted on: 12 Feb 2025
+                            {selectedJob.date_posted ? `Posted on: ${selectedJob.date_posted}` : 'Date not available'}
                         </div>
                     </div>
                </div>
@@ -506,6 +527,46 @@ export default function JobCrawler() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {applicationJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Close application dialog"
+            className="absolute inset-0 bg-slate-950/50"
+            onClick={() => !isSubmittingApplication && setApplicationJob(null)}
+          />
+          <div className="relative w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl">
+            <h3 className="text-2xl font-black text-slate-900">Apply for {applicationJob.title}</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Upload your résumé to apply. It will be securely stored in Cloudinary and shared with this job&apos;s HR team together with your profile details.
+            </p>
+
+            <label className="mt-6 flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 px-5 py-8 text-center hover:bg-emerald-50">
+              <FiUpload className="h-7 w-7 text-emerald-600" />
+              <span className="text-sm font-bold text-slate-700">
+                {resumeFile ? resumeFile.name : 'Choose résumé file'}
+              </span>
+              <span className="text-xs text-slate-500">PDF, DOC, DOCX, PNG, or JPG — maximum 5 MB</span>
+              <input
+                type="file"
+                className="sr-only"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg"
+                onChange={(event) => setResumeFile(event.target.files?.[0] ?? null)}
+              />
+            </label>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setApplicationJob(null)} disabled={isSubmittingApplication}>
+                Cancel
+              </Button>
+              <Button onClick={submitInternalApplication} isLoading={isSubmittingApplication} className="bg-emerald-500 text-white hover:bg-emerald-600">
+                Submit Application
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

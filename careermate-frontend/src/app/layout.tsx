@@ -32,7 +32,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider>
           {children}
           <Toaster />
           <HotToaster position="top-center" />

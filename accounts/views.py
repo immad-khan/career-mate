@@ -1009,6 +1009,7 @@ class UpdateJobSeekerProfileView(APIView):
     Update job seeker profile
     """
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def put(self, request):
         serializer = UpdateJobSeekerProfileSerializer(data=request.data)
@@ -1058,6 +1059,7 @@ class UpdateHRProfileView(APIView):
     Update HR profile (limited fields - can't change NTN, etc.)
     """
     permission_classes = [IsAuthenticated, IsHRPendingOrApproved]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def put(self, request):
         serializer = UpdateHRProfileSerializer(data=request.data)

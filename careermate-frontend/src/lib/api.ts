@@ -1,7 +1,20 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+let API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+
+// Sanitize the URL to handle common Vercel env variable entry mistakes
+API_BASE_URL = API_BASE_URL.replace(/^['"]|['"]$/g, ''); // Remove accidental quotes
+if (!API_BASE_URL.startsWith('http') && !API_BASE_URL.startsWith('/')) {
+  API_BASE_URL = `https://${API_BASE_URL}`; // Prepend https:// if missing
+}
+if (API_BASE_URL.endsWith('/')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -1); // Remove trailing slash
+}
+// Ensure it always ends with /api since Django routes are nested under /api
+if (!API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = `${API_BASE_URL}/api`;
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -97,6 +110,18 @@ export const authAPI = {
     const response = await api.post('/auth/resend-otp/', { email });
     return response.data;
   },
+  forgotPassword: async (data: { email: string }) => {
+    const response = await api.post('/auth/forgot-password/', data);
+    return response.data;
+  },
+  verifyResetOTP: async (data: { email: string; otp: string }) => {
+    const response = await api.post('/auth/verify-reset-otp/', data);
+    return response.data;
+  },
+  resetPassword: async (data: { email: string; otp: string; new_password: string; confirm_password: string }) => {
+    const response = await api.post('/auth/reset-password/', data);
+    return response.data;
+  },
 };
 
 // Profile API
@@ -129,8 +154,16 @@ export const profileAPI = {
     const response = await api.post('/profile/education/', data);
     return response.data;
   },
+  deleteEducation: async (id: number) => {
+    const response = await api.delete(`/profile/education/${id}/`);
+    return response.data;
+  },
   addLanguage: async (data: any) => {
     const response = await api.post('/profile/languages/', data);
+    return response.data;
+  },
+  deleteLanguage: async (id: number) => {
+    const response = await api.delete(`/profile/languages/${id}/`);
     return response.data;
   },
 };
@@ -303,8 +336,14 @@ export const jobsAPI = {
     });
     return response.data;
   },
-  updateApplicationStatus: async (id: string, status: string) => {
-    const response = await api.patch(`/applications/${id}/status/`, { status });
+  updateApplicationStatus: async (id: string, status: string, hr_message?: string) => {
+    const payload: any = { status };
+    if (hr_message) payload.hr_message = hr_message;
+    const response = await api.patch(`/applications/${id}/status/`, payload);
+    return response.data;
+  },
+  getHRStats: async () => {
+    const response = await api.get('/hr/stats/');
     return response.data;
   },
 };

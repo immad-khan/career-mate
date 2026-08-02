@@ -9,7 +9,8 @@ export interface PortfolioItem {
   id: number;
   title: string;
   description: string;
-  image: string | null;
+  image?: string | null;
+  image_url?: string | null;
   url: string | null;
 }
 
@@ -20,6 +21,7 @@ export interface EducationEntry {
   field_of_study: string;
   start_date: string;
   end_date: string | null;
+  year?: string;
   is_current: boolean;
 }
 
@@ -27,6 +29,7 @@ export interface UserLanguage {
   id: number;
   language: string;
   proficiency: string;
+  proficiency_percentage?: number;
 }
 
 // User Types

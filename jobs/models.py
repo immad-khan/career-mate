@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from cloudinary.models import CloudinaryField
 from accounts.models import HRProfile, JobSeekerProfile, CustomUser
 
 class Job(models.Model):
@@ -40,7 +41,9 @@ class Application(models.Model):
     job_seeker = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name='applications')
     status = models.CharField(max_length=50, choices=StatusChoices.choices, default=StatusChoices.PENDING)
     cover_letter = models.TextField(blank=True, null=True)
-    resume = models.FileField(upload_to='application_resumes/', blank=True, null=True)
+    # Application resumes are uploaded to Cloudinary through this field.
+    resume = CloudinaryField('application_resumes', resource_type='auto', blank=True, null=True)
+    hr_message = models.TextField(blank=True, null=True, help_text="Custom message from HR when accepting or rejecting")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

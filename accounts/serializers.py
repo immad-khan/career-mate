@@ -28,15 +28,49 @@ from .models import (
 # ==================== User Serializers ====================
 
 class JobSeekerSkillSerializer(serializers.ModelSerializer):
+    proficiency = serializers.CharField(required=False)
+
     class Meta:
         model = JobSeekerSkill
-        fields = ['id', 'name', 'percentage']
+        fields = ['id', 'name', 'percentage', 'proficiency']
+        extra_kwargs = {
+            'percentage': {'required': False}
+        }
+
+    def get_proficiency(self, obj):
+        val = obj.percentage
+        if val >= 90:
+            return 'Expert'
+        elif val >= 75:
+            return 'Advanced'
+        elif val >= 50:
+            return 'Intermediate'
+        else:
+            return 'Beginner'
+
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        if 'proficiency' in data:
+            prof = data['proficiency']
+            mapping = {
+                'Expert': 90,
+                'Advanced': 75,
+                'Intermediate': 60,
+                'Beginner': 35
+            }
+            ret['percentage'] = mapping.get(prof, 50)
+        
+        if 'proficiency' in ret:
+            del ret['proficiency']
+            
+        return ret
 
 class JobSeekerPortfolioItemSerializer(serializers.ModelSerializer):
+    url = serializers.URLField(source='link', required=False, allow_null=True)
     image_url = serializers.SerializerMethodField()
     class Meta:
         model = JobSeekerPortfolioItem
-        fields = ['id', 'title', 'description', 'image_url', 'link', 'technologies', 'image']
+        fields = ['id', 'title', 'description', 'image_url', 'url', 'technologies', 'image']
         extra_kwargs = {'image': {'write_only': True}}
     
     def get_image_url(self, obj):
@@ -47,12 +81,49 @@ class JobSeekerPortfolioItemSerializer(serializers.ModelSerializer):
 class JobSeekerEducationSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobSeekerEducation
-        fields = ['id', 'degree', 'institution', 'year']
+        fields = ['id', 'degree', 'institution', 'year', 'field_of_study', 'start_date', 'end_date', 'is_current']
 
 class JobSeekerLanguageSerializer(serializers.ModelSerializer):
+    language = serializers.CharField(source='name')
+    proficiency = serializers.CharField(required=False)
+
     class Meta:
         model = JobSeekerLanguage
-        fields = ['id', 'name', 'proficiency_percentage']
+        fields = ['id', 'language', 'proficiency', 'proficiency_percentage']
+        extra_kwargs = {
+            'proficiency_percentage': {'required': False}
+        }
+
+    def get_proficiency(self, obj):
+        val = obj.proficiency_percentage
+        if val >= 100:
+            return 'Native'
+        elif val >= 80:
+            return 'Fluent'
+        elif val >= 70:
+            return 'Full Professional'
+        elif val >= 50:
+            return 'Professional Working'
+        else:
+            return 'Elementary'
+
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        if 'proficiency' in data:
+            proficiency_str = data['proficiency']
+            mapping = {
+                'Native': 100,
+                'Fluent': 80,
+                'Full Professional': 70,
+                'Professional Working': 50,
+                'Elementary': 30
+            }
+            ret['proficiency_percentage'] = mapping.get(proficiency_str, 70)
+            
+        if 'proficiency' in ret:
+            del ret['proficiency']
+            
+        return ret
 
 class UserSerializer(serializers.ModelSerializer):
     """Basic user serializer for responses"""
@@ -86,7 +157,7 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
         model = JobSeekerProfile
         fields = [
             'id', 'user', 'phone', 'university', 
-            'graduation_year', 'degree', 'field_of_study',
+            'graduation_year', 'experience_level', 'degree', 'field_of_study',
             'tokens_balance', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'tokens_balance', 'created_at', 'updated_at']
@@ -116,14 +187,6 @@ class HRProfileSerializer(serializers.ModelSerializer):
     def get_approval_letter_url(self, obj):
         if obj.approval_letter:
             try:
-                request = self.context.get('request')
-                if request and obj.id:
-                    # Return the proxy URL that goes through Django backend
-                    # This avoids Cloudinary's Strict Transformations / 401 issues
-                    proxy_path = f'/api/admin/hr/{obj.id}/document/'
-                    return request.build_absolute_uri(proxy_path)
-                
-                # Fallback: return the raw Cloudinary URL
                 return obj.approval_letter.url
             except Exception:
                 return None
@@ -195,7 +258,16 @@ class JobSeekerRegistrationSerializer(serializers.Serializer):
 
         # Create skills
         for skill_name in skills_data:
-            JobSeekerSkill.objects.create(user=user, name=skill_name, percentage=0)
+            JobSeekerSkill.objects.create(user=user, name=skill_name, percentage=60)
+            
+        # Create education record if university is provided
+        if profile_data.get('university'):
+            JobSeekerEducation.objects.create(
+                user=user,
+                institution=profile_data['university'],
+                degree='Undergraduate', # Default placeholder as degree is not collected at signup
+                year=str(profile_data.get('graduation_year', '')) if profile_data.get('graduation_year') else '',
+            )
         
         return user
 

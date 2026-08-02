@@ -46,13 +46,11 @@ const menuItems: MenuItem[] = [
   { label: 'Mock Interview Quiz', icon: <FiBook className="w-5 h-5" />, href: '/dashboard/interview' },
   { label: 'Skill Roadmap', icon: <FiAward className="w-5 h-5" />, href: '/dashboard/roadmap' },
   { label: 'Profile', icon: <FiUser className="w-5 h-5" />, href: '/dashboard/profile' },
-  { label: 'Settings', icon: <FiSettings className="w-5 h-5" />, href: '/dashboard/settings' },
 ];
 
 const hrMenuItems: MenuItem[] = [
   { label: 'Dashboard', icon: <FiHome className="w-5 h-5" />, href: '/dashboard/hr' },
   { label: 'Profile', icon: <FiUser className="w-5 h-5" />, href: '/dashboard/profile' },
-  { label: 'Settings', icon: <FiSettings className="w-5 h-5" />, href: '/dashboard/settings' },
 ];
 
 const adminMenuItems: MenuItem[] = [

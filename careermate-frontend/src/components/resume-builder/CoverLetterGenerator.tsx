@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { generateCoverLetterAI } from '@/lib/gemini';
-import { Loader2, ChevronDown, ArrowLeft } from 'lucide-react';
+import { Loader2, ChevronDown, ArrowLeft, FileText } from 'lucide-react';
 
 const CoverLetterGenerator: React.FC = () => {
   const { currentStep, setStep, resumeData, coverLetter, setCoverLetter } = useResumeStore();
   const [loading, setLoading] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [showTonePicker, setShowTonePicker] = useState(false);
   const [showMissingModal, setShowMissingModal] = useState(false);
+  const hiddenRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async (overrideTone?: string) => {
     if (!coverLetter.jobTitle || !coverLetter.company) {
@@ -29,6 +31,68 @@ const CoverLetterGenerator: React.FC = () => {
     setLoading(false);
     setShowTonePicker(false);
     setStep('COVER_LETTER_PREVIEW');
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const html2canvas = (await import('html2canvas-pro')).default;
+      const { jsPDF } = await import('jspdf');
+
+      const element = hiddenRef.current;
+      if (!element) {
+        alert('Could not capture cover letter. Please try again.');
+        setIsGeneratingPdf(false);
+        return;
+      }
+
+      element.style.position = 'absolute';
+      element.style.left = '0';
+      element.style.top = '0';
+      element.style.zIndex = '-1';
+      element.style.visibility = 'visible';
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 794,
+        windowWidth: 794,
+        height: element.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      let yOffset = 0;
+      let remaining = imgHeight;
+      while (remaining > 0) {
+        pdf.addImage(imgData, 'JPEG', 0, -yOffset, imgWidth, imgHeight);
+        remaining -= pdfHeight;
+        if (remaining > 0) {
+          pdf.addPage();
+          yOffset += pdfHeight;
+        }
+      }
+
+      const name = resumeData?.personalInfo?.fullName?.replace(/\s+/g, '_') || 'User';
+      const company = coverLetter?.company?.replace(/\s+/g, '_') || 'Company';
+      pdf.save(`${name}_${company}_Cover_Letter.pdf`);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const inputClass = "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors";
@@ -149,6 +213,33 @@ const CoverLetterGenerator: React.FC = () => {
   // PREVIEW STEP
   return (
     <div className="max-w-6xl mx-auto p-6">
+        {/* Hidden cover letter clone for html2canvas capture */}
+        <div
+          ref={hiddenRef}
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            top: '0',
+            width: '794px',
+            backgroundColor: '#fff',
+            zIndex: -1,
+            padding: '60px',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
+          <div style={{ marginBottom: '30px', fontSize: '14px', color: '#333' }}>
+            <p style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{resumeData.personalInfo.fullName}</p>
+            <p style={{ marginBottom: '2px' }}>{resumeData.personalInfo.email} | {resumeData.personalInfo.phone}</p>
+            {resumeData.personalInfo.location && <p style={{ marginBottom: '16px' }}>{resumeData.personalInfo.location}</p>}
+            <p style={{ marginBottom: '16px' }}>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p style={{ marginBottom: '2px' }}>Hiring Manager</p>
+            <p>{coverLetter.company}</p>
+          </div>
+          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '14px', color: '#333' }}>
+            {coverLetter.generatedContent}
+          </div>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 bg-white p-8 shadow-sm rounded-xl border border-gray-100 min-h-[600px]">
             <div className="mb-8 text-sm text-gray-600">
@@ -177,8 +268,16 @@ const CoverLetterGenerator: React.FC = () => {
              </div>
 
              <div className="space-y-4">
-                 <button className="w-full py-3 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-colors" onClick={() => window.print()}>
-                     Download PDF
+                 <button
+                   className="w-full py-3 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+                   onClick={handleDownloadPdf}
+                   disabled={isGeneratingPdf}
+                 >
+                   {isGeneratingPdf ? (
+                     <><Loader2 size={18} className="animate-spin" /> Generating PDF...</>
+                   ) : (
+                     <><FileText size={18} /> Download PDF</>
+                   )}
                  </button>
 
                  {/* Regenerate with tone picker */}

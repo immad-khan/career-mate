@@ -23,51 +23,9 @@ import {
   FiFileText,
 } from 'react-icons/fi';
 
-// Helper to open a document via authenticated proxy
-async function openDocumentProxy(url: string) {
-  try {
-    // Token is stored in cookies by the auth system
-    const getCookie = (name: string) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
-      return undefined;
-    };
-    
-    const accessToken = getCookie('access_token');
-    if (!accessToken) {
-      toast.error('Please log in again');
-      return;
-    }
-    
-    toast.loading('Loading document...', { id: 'doc-loading' });
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-    
-    toast.dismiss('doc-loading');
-    
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('Document fetch failed:', response.status, text);
-      toast.error('Failed to load document');
-      return;
-    }
-    
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    window.open(blobUrl, '_blank');
-    
-    // Clean up blob URL after a delay
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-  } catch (error) {
-    console.error('Document proxy error:', error);
-    toast.dismiss('doc-loading');
-    toast.error('Error loading document');
-  }
+// Helper to open a document URL directly (Cloudinary-hosted)
+function openDocument(url: string) {
+  window.open(url, '_blank');
 }
 
 export default function AdminHRApprovalsPage() {
@@ -220,7 +178,7 @@ export default function AdminHRApprovalsPage() {
                     </Button>
                     {hr.approval_letter_url && (
                       <button
-                        onClick={() => openDocumentProxy(hr.approval_letter_url)}
+                        onClick={() => openDocument(hr.approval_letter_url)}
                         className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer"
                         title="View Approval Letter"
                       >
@@ -320,7 +278,7 @@ export default function AdminHRApprovalsPage() {
               <div>
                 <p className="text-sm text-gray-500 mb-2">Approval Letter</p>
                 <button
-                  onClick={() => openDocumentProxy(selectedHR.approval_letter_url!)}
+                  onClick={() => openDocument(selectedHR.approval_letter_url!)}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-all duration-300 shadow-sm cursor-pointer"
                 >
                   <FiDownload className="w-4 h-4" />

@@ -335,10 +335,14 @@ class JobSeekerEducation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='education_entries')
     degree = models.CharField(max_length=255)
     institution = models.CharField(max_length=255)
-    year = models.CharField(max_length=50)
+    year = models.CharField(max_length=50, blank=True, null=True)
+    field_of_study = models.CharField(max_length=255, blank=True, null=True)
+    start_date = models.CharField(max_length=50, blank=True, null=True)
+    end_date = models.CharField(max_length=50, blank=True, null=True)
+    is_current = models.BooleanField(default=False)
     class Meta:
         db_table = 'job_seeker_education'
-        ordering = ['-year']
+        ordering = ['id']
     def __str__(self):
         return f"{self.user.full_name} - {self.degree}"
 

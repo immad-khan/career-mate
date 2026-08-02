@@ -144,3 +144,37 @@ class EmailService:
             template_name='welcome_email.html',
             context=context
         )
+
+    @classmethod
+    def send_application_approved_email(cls, user, job_title, company_name, hr_name, hr_message=None):
+        """Send application accepted / congratulations email"""
+        context = {
+            'user_name': user.full_name,
+            'job_title': job_title,
+            'company_name': company_name,
+            'hr_name': hr_name,
+            'hr_message': hr_message or '',
+        }
+        return cls.send_email(
+            to_email=user.email,
+            subject=f'Congratulations! You\'ve been hired for {job_title} at {company_name}',
+            template_name='application_approved_email.html',
+            context=context
+        )
+
+    @classmethod
+    def send_application_rejected_email(cls, user, job_title, company_name, hr_name, hr_message=None):
+        """Send application rejection email"""
+        context = {
+            'user_name': user.full_name,
+            'job_title': job_title,
+            'company_name': company_name,
+            'hr_name': hr_name,
+            'hr_message': hr_message or '',
+        }
+        return cls.send_email(
+            to_email=user.email,
+            subject=f'Application Update - {job_title} at {company_name}',
+            template_name='application_rejected_email.html',
+            context=context
+        )

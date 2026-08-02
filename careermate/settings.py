@@ -151,6 +151,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "https://career-mate-8wo4.vercel.app",
+    "https://careermate.site",
+    "https://www.careermate.site",
 ]
 CORS_ALLOW_CREDENTIALS = True
 

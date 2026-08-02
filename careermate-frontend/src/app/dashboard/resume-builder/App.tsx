@@ -1,5 +1,5 @@
 import React from 'react';
-import ResumeBuilderPage from './src/app/dashboard/resume-builder/page';
+import ResumeBuilderPage from './page';
 
 // This component simulates the Next.js Layout/Page structure
 const App: React.FC = () => {

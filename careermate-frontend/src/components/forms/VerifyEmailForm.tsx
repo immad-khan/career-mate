@@ -108,7 +108,7 @@ export default function VerifyEmailForm() {
     
     setResending(true);
     try {
-      const response = await authAPI.resendOTP({ email });
+      const response = await authAPI.resendOTP(email);
       if (response.success) {
         toast.success('New verification code sent!');
         setTimer(60);

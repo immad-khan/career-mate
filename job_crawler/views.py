@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import SavedJob, AppliedJob
 from .serializers import SavedJobSerializer, AppliedJobSerializer
+from .job_apis import fetch_all_apis
 import pandas as pd
 try:
     from jobspy import scrape_jobs
@@ -81,10 +82,24 @@ class JobSearchView(APIView):
                 'is_remote': j.job_type == 'Remote',
                 'job_type': j.job_type,
                 'is_local': True,
-                'local_uuid': str(j.id)
+                'local_uuid': str(j.id),
+                'required_skills': j.required_skills,
+                'experience_level': j.experience_level,
             })
 
-        # Try to use the new Node.js Scraper API
+        # Tier 2: Free job APIs (Remotive, RemoteOK, Himalayas, Adzuna, Jooble)
+        try:
+            api_jobs = fetch_all_apis(keyword, location)
+            if api_jobs:
+                return Response({
+                    'success': True,
+                    'data': local_jobs + api_jobs,
+                    'count': len(local_jobs) + len(api_jobs)
+                }, status=status.HTTP_200_OK)
+        except Exception as api_err:
+            print(f"Free API Error: {api_err}")
+
+        # Tier 3: Node.js Scraper API (legacy fallback)
         try:
             import requests
             api_url = "http://localhost:8081/search-jobs"
@@ -129,6 +144,7 @@ class JobSearchView(APIView):
             # Fallback to original logic if API fails
             pass
 
+        # Tier 4: jobspy (Legacy fallback)
         if not scrape_jobs:
             return Response({
                 'success': True,

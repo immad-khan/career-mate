@@ -191,5 +191,3 @@ export default function BeautifulNavbar({ onMenuClick }: BeautifulNavbarProps) {
     </nav>
   )
 }
-  )
-}

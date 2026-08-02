@@ -10,6 +10,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
 }
 
 export default function Modal({
@@ -18,6 +19,7 @@ export default function Modal({
   title,
   children,
   size = 'md',
+  className,
 }: ModalProps) {
   // Close on escape key
   useEffect(() => {
@@ -58,7 +60,8 @@ export default function Modal({
         <div
           className={cn(
             'relative w-full bg-white rounded-xl shadow-xl transform transition-all',
-            sizeClasses[size]
+            sizeClasses[size],
+            className
           )}
         >
           {/* Header */}

@@ -23,7 +23,7 @@ import {
   FiGlobe,
   FiLayers,
   FiSettings,
-  FiTarget,
+  FiStar,
 } from 'react-icons/fi';
 import { Skill, PortfolioItem, EducationEntry, UserLanguage } from '@/types';
 import Spinner from '@/components/ui/spinner';
@@ -342,18 +342,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Token Balance (Job Seeker only) */}
-            {user.role === 'job_seeker' && (profile as any)?.tokens_balance !== undefined && (
-                 <div className="p-6 rounded-2xl transition-all bg-linear-to-br from-green-600 to-green-800 text-white shadow-lg">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-green-100">Interview Credits</p>
-                            <h4 className="text-4xl font-bold mt-1">{(profile as any).tokens_balance}</h4>
-                        </div>
-                        <FiTarget className="w-12 h-12 opacity-30 text-green-600" />
-                    </div>
-                </div>
-            )}
+            {/* Token Balance removed as requested */}
           </div>
 
           {/* Main Content Area */}
@@ -365,12 +354,12 @@ export default function ProfilePage() {
                 <div className="p-6 rounded-2xl transition-all bg-white shadow-xl">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold uppercase tracking-widest flex items-center gap-2 text-gray-900">
-                      <FiTarget className="text-green-600" /> Technical Skills
+                      <FiStar className="text-green-600" /> Technical Skills
                     </h3>
                   </div>
                   
                   <div className="space-y-6 mb-8">
-                    {(profile as any)?.skills?.length > 0 ? (profile as any).skills.map((skill: Skill) => (
+                    {user?.skills && user.skills.length > 0 ? user.skills.map((skill: Skill) => (
                       <div key={skill.id} className="group">
                         <div className="flex justify-between items-end mb-1">
                           <span className="text-xs font-bold uppercase tracking-widest text-gray-800">
@@ -434,7 +423,7 @@ export default function ProfilePage() {
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    {(profile as any)?.portfolio_items?.map((item: PortfolioItem) => (
+                    {user?.portfolio_items?.map((item: PortfolioItem) => (
                       <div 
                         key={item.id}
                         className="group relative overflow-hidden rounded-xl border transition-all duration-300 bg-white shadow-sm hover:shadow-md"
@@ -523,13 +512,17 @@ export default function ProfilePage() {
                       <FiBook className="text-green-600" /> Education
                     </h3>
                     <div className="space-y-4 mb-6">
-                      {(profile as any)?.education?.map((edu: EducationEntry) => (
+                      {user?.education_entries?.map((edu: EducationEntry) => (
                         <div key={edu.id} className="p-4 rounded-lg border-l-4 transition-all bg-gray-50 border-green-600 hover:bg-gray-100">
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-bold text-sm uppercase text-gray-900">{edu.institution}</h4>
-                              <p className="text-xs font-bold text-gray-500">{edu.degree} in {edu.field_of_study}</p>
-                              <p className="text-[10px] opacity-60 mt-2 font-mono">{edu.start_date} - {edu.is_current ? 'Current' : edu.end_date}</p>
+                              <p className="text-xs font-bold text-gray-500">
+                                {edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}
+                              </p>
+                              <p className="text-[10px] opacity-60 mt-2 font-mono">
+                                {edu.start_date ? `${edu.start_date} - ` : ''}{edu.is_current ? 'Current' : (edu.end_date || edu.year || 'Graduation Year')}
+                              </p>
                             </div>
                             <button onClick={async () => {
                                 try {
@@ -559,7 +552,7 @@ export default function ProfilePage() {
                       <FiGlobe className="text-green-600" /> Languages
                     </h3>
                     <div className="space-y-4 mb-6">
-                      {(profile as any)?.languages?.map((lang: UserLanguage) => (
+                      {user?.languages?.map((lang: UserLanguage) => (
                         <div key={lang.id} className="flex justify-between items-center group p-3 rounded-lg border border-transparent hover:border-green-100">
                           <div>
                             <p className="font-bold uppercase text-sm transition-all text-gray-800">{lang.language}</p>
@@ -603,15 +596,44 @@ export default function ProfilePage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
+                    <p className="text-[10px] uppercase font-bold mb-1 text-green-600">Full Name</p>
+                    <p className="text-xl font-bold tracking-tighter text-gray-900">{user?.full_name}</p>
+                  </div>
+                  <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
+                    <p className="text-[10px] uppercase font-bold mb-1 text-green-600">Email Address</p>
+                    <p className="text-xl font-bold font-mono text-gray-900">{user?.email}</p>
+                  </div>
+                  <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
                     <p className="text-[10px] uppercase font-bold mb-1 text-green-600">Company Name</p>
-                    <p className="text-xl font-bold italic tracking-tighter text-gray-900">{(profile as any)?.company_name}</p>
+                    <p className="text-xl font-bold tracking-tighter text-gray-900">{(profile as any)?.company_name}</p>
                   </div>
                   <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
                     <p className="text-[10px] uppercase font-bold mb-1 text-green-600">Company Email</p>
                     <p className="text-xl font-bold font-mono text-gray-900">{(profile as any)?.company_email || user?.email}</p>
                   </div>
+                  <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
+                    <p className="text-[10px] uppercase font-bold mb-1 text-green-600">NTN Number</p>
+                    <p className="text-xl font-bold tracking-tighter text-gray-900">{(profile as any)?.ntn_number || '—'}</p>
+                  </div>
+                  <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm">
+                    <p className="text-[10px] uppercase font-bold mb-1 text-green-600">Discovery Date</p>
+                    <p className="text-xl font-bold tracking-tighter text-gray-900">{(profile as any)?.interview_date || '—'}</p>
+                  </div>
+                  {(profile as any)?.approval_letter_url && (
+                    <div className="p-6 rounded-xl border transition-all bg-gray-50 border-gray-100 shadow-sm md:col-span-2">
+                      <p className="text-[10px] uppercase font-bold mb-2 text-green-600">Approval Letter</p>
+                      <a
+                        href={(profile as any).approval_letter_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700 transition-colors"
+                      >
+                        <FiExternalLink /> View Uploaded Document
+                      </a>
+                    </div>
+                  )}
                 </div>
-                {profile && 'designation_display' in (profile as any) && (
+                {profile && 'designation_display' in (profile as any) && (profile as any).designation_display && (
                     <div className="mt-8 p-6 rounded-xl border border-dashed border-green-200 bg-green-50">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-green-600">Designation</p>
                         <p className="text-2xl font-bold uppercase mt-1 text-gray-900">{(profile as any).designation_display}</p>

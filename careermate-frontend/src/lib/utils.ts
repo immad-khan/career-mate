@@ -28,15 +28,35 @@ export function formatDateTime(date: string | Date): string {
 
 // Get error message from API response
 export function getErrorMessage(error: any): string {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
-  }
   if (error.response?.data?.errors) {
     const errors = error.response.data.errors;
-    const firstKey = Object.keys(errors)[0];
-    if (firstKey && errors[firstKey]?.[0]) {
-      return errors[firstKey][0];
+    if (typeof errors === 'object' && errors !== null) {
+      const keys = Object.keys(errors);
+      if (keys.length > 0) {
+        const firstKey = keys[0];
+        const firstVal = errors[firstKey];
+        if (Array.isArray(firstVal) && firstVal.length > 0) {
+          return firstVal[0];
+        } else if (typeof firstVal === 'string') {
+          return firstVal;
+        } else if (firstVal && typeof firstVal === 'object') {
+          const subKeys = Object.keys(firstVal);
+          if (subKeys.length > 0) {
+            const subVal = (firstVal as any)[subKeys[0]];
+            if (Array.isArray(subVal) && subVal.length > 0) {
+              return subVal[0];
+            } else if (typeof subVal === 'string') {
+              return subVal;
+            }
+          }
+        }
+      }
+    } else if (typeof errors === 'string') {
+      return errors;
     }
+  }
+  if (error.response?.data?.message) {
+    return error.response.data.message;
   }
   if (error.message) {
     return error.message;

@@ -1,0 +1,41 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}Application Update - CareerMate{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Hi {{ user_name }},</h1>
+
+<p class="message">
+    Thank you for taking the time to apply for the <strong>{{ job_title }}</strong> position at <strong>{{ company_name }}</strong>. We truly appreciate your interest in joining our team.
+</p>
+
+<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+    <p style="color: #991b1b; font-size: 15px; margin: 0;">
+        After careful consideration, we regret to inform you that we have decided to move forward with another candidate for this position.
+    </p>
+</div>
+
+{% if hr_message %}
+<div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
+    <p style="color: #1e40af; font-size: 14px; font-weight: bold; margin-bottom: 8px;">Personal message from {{ hr_name }}:</p>
+    <p style="color: #1d4ed8; font-size: 15px; font-style: italic; margin: 0;">"{{ hr_message }}"</p>
+</div>
+{% endif %}
+
+<p class="message">
+    This doesn't diminish your talent or potential. Hiring decisions are often incredibly difficult, and sometimes come down to specific experience or timing. We encourage you to keep exploring opportunities — both on CareerMate and elsewhere.
+</p>
+
+<p class="message">
+    We'd love to see you apply again for future roles that match your skills. Your profile remains on our radar, and we'll reach out if something suitable comes up.
+</p>
+
+<p class="message">
+    Wishing you the very best in your job search and career journey.
+</p>
+
+<p class="message">
+    Warm regards,<br>
+    <span class="highlight">The CareerMate Team</span>
+</p>
+{% endblock %}

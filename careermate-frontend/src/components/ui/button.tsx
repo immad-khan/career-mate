@@ -2,6 +2,22 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import Spinner from './spinner';
 
+/**
+ * Utility to provide button variant class names.
+ * This is a lightweight implementation used by alert-dialog components.
+ */
+export const buttonVariants = (options?: { variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost' }) => {
+  const variant = options?.variant ?? 'primary';
+  const variantMap: Record<string, string> = {
+    primary: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
+    secondary: 'bg-white/10 text-white hover:bg-white/20 focus:ring-gray-500',
+    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    outline: 'border-2 border-green-600 text-green-500 hover:bg-green-600 hover:text-white focus:ring-green-500',
+    ghost: 'text-gray-400 hover:text-white hover:bg-white/10 focus:ring-gray-500',
+  };
+  return variantMap[variant] ?? '';
+};
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';

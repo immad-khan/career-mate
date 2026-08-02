@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { useFavouriteJobsStore } from '@/store/favouriteJobsStore';
 import Link from 'next/link';
 import {
   FiArrowRight,
@@ -10,11 +11,17 @@ import {
   FiBriefcase,
   FiCheckCircle,
   FiBell,
+  FiHeart,
 } from 'react-icons/fi';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const { favouriteJobs, fetchFavourites, loaded } = useFavouriteJobsStore();
   const [notifications, setNotifications] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetchFavourites();
+  }, [fetchFavourites]);
 
   React.useEffect(() => {
     if (user?.role === 'hr') {
@@ -39,15 +46,17 @@ export default function DashboardPage() {
     } catch {}
   };
 
+  const skillsCount = user?.skills?.length ?? 0;
+
   const stats = [
     { 
       label: 'Applied Jobs', 
-      value: 12, 
+      value: 0,   // Will be updated when applications API is wired
       icon: <FiBriefcase className="w-6 h-6" />, 
     },
     { 
       label: 'Saved Skills', 
-      value: 8, 
+      value: skillsCount, 
       icon: <FiStar className="w-6 h-6" />, 
     },
     { 
@@ -57,10 +66,11 @@ export default function DashboardPage() {
     },
     { 
       label: 'Quiz Avg Score', 
-      value: '78%', 
+      value: '—',   // No score yet for new users
       icon: <FiCheckCircle className="w-6 h-6" />, 
     },
   ];
+
 
   const skillBotCard = {
     title: 'Ask SkillBot Anything',
@@ -125,16 +135,6 @@ export default function DashboardPage() {
       { name: 'React', percentage: 50 },
     ],
     buttonText: 'View Full Roadmap',
-  };
-
-  const hrPanelCard = {
-    title: 'HR Job Posting Panel',
-    description: 'Manage active, pending and closed job postings.',
-    stats: [
-      { label: 'Active', value: 6 },
-      { label: 'Pending', value: 2 },
-      { label: 'Closed', value: 4 },
-    ],
   };
 
   const quickTipsCard = {
@@ -242,9 +242,23 @@ export default function DashboardPage() {
               </span>
             ))}
           </div>
-          <button className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
+          <Link href="/dashboard/skillbot" className="block w-full bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors text-center">
             {skillBotCard.buttonText}
-          </button>
+          </Link>
+        </div>
+
+        {/* Resume Builder */}
+        <div className="p-6 rounded-2xl border bg-white border-gray-100 shadow-sm">
+          <h3 className="text-base font-bold uppercase mb-1 text-gray-900">Resume Builder</h3>
+          <p className="text-xs text-gray-500 mb-4">Build a professional resume with tailored templates and AI-powered suggestions.</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold border border-green-100 text-green-700 bg-green-50">6 Templates</span>
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold border border-green-100 text-green-700 bg-green-50">PDF Export</span>
+            <span className="px-3 py-1 rounded-full text-[10px] font-bold border border-green-100 text-green-700 bg-green-50">AI Review</span>
+          </div>
+          <Link href="/dashboard/resume-builder" className="block w-full bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors text-center">
+            Build Resume
+          </Link>
         </div>
 
         {/* Cover Letter Generator */}
@@ -264,8 +278,8 @@ export default function DashboardPage() {
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <button className="bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700">Generate</button>
-            <button className="border border-green-600 text-green-600 font-bold py-2.5 rounded-lg text-sm hover:bg-green-50">Full Tool</button>
+            <Link href="/dashboard/cover-letter" className="bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 text-center">Generate</Link>
+            <Link href="/dashboard/cover-letter" className="border border-green-600 text-green-600 font-bold py-2.5 rounded-lg text-sm hover:bg-green-50 text-center">Full Tool</Link>
           </div>
         </div>
 
@@ -303,8 +317,8 @@ export default function DashboardPage() {
             ))}
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <button className="bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700">Start</button>
-            <button className="border border-green-600 text-green-600 font-bold py-2.5 rounded-lg text-sm hover:bg-green-50">Resume</button>
+            <Link href="/dashboard/interview" className="bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 text-center">Start</Link>
+            <Link href="/dashboard/interview" className="border border-green-600 text-green-600 font-bold py-2.5 rounded-lg text-sm hover:bg-green-50 text-center">Resume</Link>
           </div>
         </div>
 
@@ -353,6 +367,40 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* Favourite Jobs */}
+        <div className="p-6 rounded-2xl border bg-white border-gray-100 shadow-sm">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-base font-bold uppercase text-gray-900">Favourite Jobs</h3>
+            <Link href="/dashboard/jobs" className="text-[10px] font-bold text-green-600 hover:underline">View All</Link>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">Jobs you saved from the Job Crawler.</p>
+          {favouriteJobs.length > 0 ? (
+            <div className="space-y-3 mb-4">
+              {favouriteJobs.slice(0, 3).map((job) => (
+                <a
+                  key={job.job_id}
+                  href={job.job_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-3 rounded-xl border border-gray-100 bg-gray-50 hover:border-green-200 hover:bg-green-50/50 transition-colors"
+                >
+                  <p className="text-xs font-bold uppercase text-gray-900">{job.title}</p>
+                  <p className="text-[10px] font-bold text-gray-400">{job.company} · {job.location}</p>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 text-center mb-4">
+              <FiHeart className="mx-auto text-gray-300 mb-2" size={24} />
+              <p className="text-xs text-gray-400">No favourite jobs yet</p>
+              <p className="text-[10px] text-gray-300 mt-1">Save jobs from the Job Crawler to see them here</p>
+            </div>
+          )}
+          <Link href="/dashboard/jobs" className="block text-center bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
+            Browse Jobs
+          </Link>
+        </div>
+
         {/* Skill Roadmap Preview */}
         <div className="p-6 rounded-2xl border bg-white border-gray-100 shadow-sm">
           <h3 className="text-base font-bold uppercase mb-1 text-gray-900">Skill Roadmap</h3>
@@ -370,27 +418,9 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          <button className="w-full bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors">
+          <Link href="/dashboard/roadmap" className="block w-full bg-green-600 text-white font-bold py-2.5 rounded-lg text-sm hover:bg-green-700 transition-colors text-center">
             View Full
-          </button>
-        </div>
-
-        {/* HR Panel */}
-        <div className="p-6 rounded-2xl border bg-white border-gray-100 shadow-sm">
-          <h3 className="text-base font-bold uppercase mb-1 text-gray-900">Recruiter Panel</h3>
-          <p className="text-xs text-gray-500 mb-6">{hrPanelCard.description}</p>
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            <button className="bg-green-600 text-white font-bold py-2 rounded-lg text-[10px] hover:bg-green-700 transition-colors">Post Job</button>
-            <button className="border border-green-600 text-green-600 font-bold py-2 rounded-lg text-[10px] hover:bg-green-50 transition-colors">View All</button>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {hrPanelCard.stats.map((s, i) => (
-              <div key={i} className="p-2 bg-gray-50 border border-gray-100 rounded-lg text-center">
-                <p className="text-[10px] font-bold text-gray-400 mb-1">{s.label}</p>
-                <p className="text-xl font-bold text-gray-900">{s.value}</p>
-              </div>
-            ))}
-          </div>
+          </Link>
         </div>
 
         {/* Quick Tips */}
